@@ -182,7 +182,7 @@ textarea{width:100%;min-height:160px;border:1px solid var(--line);border-radius:
   <header class="top">
     <div class="brand">
       <span class="glyph" aria-hidden="true"></span>
-      <div><h1 id="t-name">Torneo de Ajedrez Escolar</h1><p class="status" id="t-status"></p><p class="appline">Torneo Suizo Escolar · 30 Santo Domingo · versión 1.2.1</p></div>
+      <div><h1 id="t-name">Torneo de Ajedrez Escolar</h1><p class="status" id="t-status"></p><p class="appline">Torneo Suizo Escolar · 30 Santo Domingo · versión 1.2.2</p></div>
     </div>
     <div class="topright"><span class="cloud" id="cloud">En este dispositivo</span><button type="button" class="btn exit" id="b-exit" data-act="exit-ask">Salir</button></div>
   </header>
@@ -204,7 +204,7 @@ textarea{width:100%;min-height:160px;border:1px solid var(--line);border-radius:
 /* ---------- Lógica del torneo (sin DOM) ---------- */
 function blank(n){
   var ps=[]; for(var i=1;i<=n;i++) ps.push({id:i,name:"",active:true});
-  return {v:1,name:"Torneo de Ajedrez Escolar",boards:7,rounds:4,minutes:15,players:ps,rondas:[],playoff:null,updatedAt:0,device:""};
+  return {v:1,name:"Torneo de Ajedrez Escolar",boards:1,rounds:1,minutes:15,players:ps,rondas:[],playoff:null,updatedAt:0,device:""};
 }
 // Puntos se guardan al doble (victoria 2, tablas 1) para no usar decimales.
 function stats(st,upto){
@@ -380,8 +380,8 @@ var DEVICE=Math.random().toString(36).slice(2,10);
 var LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function loadLocal(){try{var s=localStorage.getItem(LS_KEY);var d=s?JSON.parse(s):null;return d&&Array.isArray(d.players)&&Array.isArray(d.rondas)?d:null;}catch(e){return null;}}
 function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
-var state=loadLocal()||blank(22);
-var VERSION="1.2.1";
+var state=loadLocal()||blank(2);
+var VERSION="1.2.2";
 var ui={tab:"ronda",round:null,unlock:false,confirm:null,copy:null,copyMsg:"",manual:false,sorteo:false,sorteoText:"",restore:null};
 var readOnly=false,docRef=null,writing=false,dirty=false,saveTimer=null,firstSnap=true,pendingRender=false;
 
@@ -595,7 +595,7 @@ function settingsBlock(){
 }
 function summaryLine(){
   var n=activeCount(),g=Math.floor(n/2),t=tandasPerRound();
-  var txt=g+" partidas por ronda en "+(t===1?"una sola tanda":t+" tandas")+
+  var txt=g+(g===1?" partida":" partidas")+" por ronda en "+(t===1?"una sola tanda":t+" tandas")+
     (n%2?"; un jugador descansa cada ronda":"")+". Duración estimada: "+fmtDur(estimate())+".";
   if(t===1&&state.boards>g) txt+=" Te sobran "+(state.boards-g)+" tableros.";
   return '<p class="note">'+txt+'</p>';
@@ -773,7 +773,7 @@ function viewJug(){
 }
 function manualHtml(){
   return '<details id="manual"'+(ui.manual?" open":"")+'><summary>Manual rápido</summary><ol>'+
-    '<li><b>Configura.</b> En la pestaña Ronda indica jugadores, tableros, rondas y minutos por tanda. Abajo aparece la vista previa de la ronda 1.</li>'+
+    '<li><b>Configura.</b> La app empieza en 2 jugadores, 1 tablero, 1 ronda y 15 minutos por tanda. En la pestaña Ronda ajusta esos valores a tu torneo; abajo aparece la vista previa de la ronda 1.</li>'+
     '<li><b>Sortea los números.</b> Cada alumno saca su número, o pega la lista en Jugadores › Sorteo automático y la app los reparte al azar. Los nombres se pueden escribir antes o después de empezar.</li>'+
     '<li><b>Marca ausentes.</b> En Jugadores desmarca “Juega” a quien no llegó, antes de iniciar.</li>'+
     '<li><b>Inicia el torneo.</b> Toca “Iniciar torneo” y sienta a los alumnos según su mesa. El primero de cada mesa lleva blancas.</li>'+
@@ -790,7 +790,8 @@ function manualHtml(){
     '<li><b>Resultado mal capturado en una ronda anterior:</b> abre esa ronda con los botones R1, R2… y toca “Corregir resultados”.</li>'+
     '<li><b>Alguien llega tarde o se retira:</b> agrégalo o desmárcalo en Jugadores. Aplica desde la siguiente ronda.</li>'+
     '<li><b>Consigues más tableros:</b> cambia el número en Ajustes. Con tableros suficientes para todas las partidas se juega en una sola tanda.</li>'+
-    '<li><b>Quieres empezar de cero:</b> “Reiniciar torneo”, al final de esta pantalla, borra rondas y resultados y conserva los nombres.</li>'+
+    '<li><b>Quieres repetir el torneo con el mismo grupo:</b> “Reiniciar torneo”, al final de esta pantalla, borra rondas y resultados y conserva nombres y ajustes.</li>'+
+    '<li><b>Quieres un torneo nuevo con otro grupo:</b> “Nuevo torneo desde cero” borra todo y regresa a 2 jugadores, 1 tablero, 1 ronda y 15 minutos. Guarda un respaldo antes si quieres conservar el anterior.</li>'+
     '<li><b>Cambias de equipo o temes perder el torneo:</b> en Ajustes › Respaldo toca “Guardar respaldo” y, en el otro equipo, “Restaurar respaldo”.</li></ul>'+
     '<p><b>Sin internet.</b> Todo se guarda en este navegador. No borres sus datos ni uses ventana de incógnito durante el torneo, y lleva todo el torneo en un solo equipo. Mientras hay una ronda en curso, la app pide mantener la pantalla encendida, si el navegador lo permite. Instalada desde su enlace, abre sin internet desde el ícono.</p></details>';
 }
@@ -823,6 +824,13 @@ function viewAj(){
     }else{
       h+='<div class="row"><button type="button" class="btn danger" id="b-askreset" data-act="ask" data-c="reset">Reiniciar torneo</button></div>';
     }
+    if(ui.confirm==="fresh"){
+      h+='<div class="banner buff"><p>Se borra todo: nombres, rondas, resultados y ajustes. La app vuelve a 2 jugadores, 1 tablero, 1 ronda y 15 minutos. Si quieres conservar este torneo, primero toca “Guardar respaldo”.</p>'+
+         '<div class="row"><button type="button" class="btn danger" id="b-fresh" data-act="fresh">Sí, empezar desde cero</button><button type="button" class="btn" id="b-cancel2" data-act="cancel">Cancelar</button></div></div>';
+    }else{
+      h+='<div class="row"><button type="button" class="btn danger" id="b-askfresh" data-act="ask" data-c="fresh">Nuevo torneo desde cero</button></div>';
+    }
+    h+='<p class="note">“Reiniciar torneo” conserva nombres y ajustes para repetir con el mismo grupo. “Nuevo torneo desde cero” borra todo.</p>';
     h+='</div>';
   }
   h+=aboutHtml();
@@ -943,6 +951,10 @@ function act(a,d){
       toast("Números sorteados para "+names.length+" alumnos. Revisa la lista."); break;
     case "undo": ui.confirm=null; ui.round=null; mutate(function(s){s.rondas.pop();s.playoff=null;}); break;
     case "reset": ui.confirm=null; ui.round=null; mutate(function(s){s.rondas=[];s.playoff=null;}); ui.tab="ronda"; tReset(); render(); break;
+    case "fresh":
+      ui.confirm=null; ui.round=null; ui.unlock=false; ui.sorteoText="";
+      mutate(function(s){var b=blank(2);Object.keys(s).forEach(function(k){delete s[k];});Object.keys(b).forEach(function(k){s[k]=b[k];});});
+      ui.tab="ronda"; tReset(); render(); window.scrollTo(0,0); toast("Nuevo torneo listo: 2 jugadores, 1 tablero, 1 ronda"); break;
     case "addp": mutate(function(s){s.players.push({id:s.players.length+1,name:"",active:true});}); break;
     case "po": mutate(function(s){s.playoff={a:+d.a,b:+d.b,winner:+d.w};}); break;
     case "po-clear": mutate(function(s){s.playoff=null;}); break;

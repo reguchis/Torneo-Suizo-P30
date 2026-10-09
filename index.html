@@ -1,0 +1,1003 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Torneo Suizo Escolar</title>
+<meta name="description" content="Torneo de ajedrez escolar con sistema suizo: emparejamientos, resultados y posiciones, con o sin internet.">
+<meta name="author" content="Christian Reyes Guzmán">
+<meta name="theme-color" content="#2c6a49">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Torneo Suizo">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>
+/* Layout: planilla de arbitraje en una columna; pestañas fijas arriba y filas de mesa grandes para capturar con el pulgar. */
+:root{
+  --bg:#eef2ec; --surface:#fbfcfa; --ink:#14221a; --muted:#56655c; --line:#cfd8cf;
+  --felt:#2c6a49; --on-felt:#f6faf6; --felt-soft:#dbe9df;
+  --buff:#f0e2b6; --on-buff:#3d3210;
+  --danger:#a3312a; --piece-w:#ffffff; --piece-b:#14221a;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1612; --surface:#17211b; --ink:#e6eee8; --muted:#97a89d; --line:#2a3a30;
+    --felt:#5fb486; --on-felt:#07130c; --felt-soft:#1f3327;
+    --buff:#4a4222; --on-buff:#f3e7bd;
+    --danger:#ec8279; --piece-w:#eef2ec; --piece-b:#050a07; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1612; --surface:#17211b; --ink:#e6eee8; --muted:#97a89d; --line:#2a3a30;
+  --felt:#5fb486; --on-felt:#07130c; --felt-soft:#1f3327;
+  --buff:#4a4222; --on-buff:#f3e7bd;
+  --danger:#ec8279; --piece-w:#eef2ec; --piece-b:#050a07; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+button,input,textarea{font:inherit;color:inherit}
+.app{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:14px 56px;display:flex;flex-direction:column;gap:14px}
+
+.top{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.glyph{flex:none;width:30px;height:30px;border-radius:5px;border:1px solid var(--line);
+  background:conic-gradient(var(--felt) 25%,var(--buff) 0 50%,var(--felt) 0 75%,var(--buff) 0)}
+.brand div{min-width:0}
+h1{font-family:var(--display);font-weight:700;font-size:1.3rem;line-height:1.15;margin:0;text-wrap:balance;overflow-wrap:anywhere}
+.status{margin:2px 0 0;color:var(--muted);font-size:.875rem}
+.cloud{font-size:.75rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px;white-space:nowrap}
+.cloud.sync{color:var(--felt);border-color:var(--felt)}
+.appline{margin:2px 0 0;color:var(--muted);font-size:.75rem;letter-spacing:.02em}
+
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;
+  background:var(--bg);padding-block:6px;border-bottom:1px solid var(--line)}
+.tabs button{min-height:44px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-weight:600;font-size:.9rem;cursor:pointer;padding:0 4px}
+.tabs button[aria-selected="true"]{background:var(--felt);color:var(--on-felt)}
+
+main{display:flex;flex-direction:column;gap:16px;min-width:0}
+h2{font-family:var(--display);font-weight:700;font-size:1.5rem;line-height:1.15;margin:0;text-wrap:balance}
+h2 small{font-family:var(--body);font-weight:500;font-size:.95rem;color:var(--muted)}
+h3{font-family:var(--body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+h3 small{letter-spacing:0;text-transform:none;font-weight:400;font-size:.875rem}
+p{margin:0}
+.lead{color:var(--muted);max-width:62ch}
+.note{color:var(--muted);font-size:.875rem;max-width:62ch}
+.stack{display:flex;flex-direction:column;gap:10px;min-width:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.banner{background:var(--felt-soft);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.banner.buff{background:var(--buff);color:var(--on-buff)}
+.banner b.big{font-family:var(--display);font-size:1.35rem;line-height:1.2}
+
+.btn{min-height:44px;padding:0 16px;border-radius:9px;border:1px solid var(--line);background:var(--surface);font-weight:600;cursor:pointer}
+.btn.primary{background:var(--felt);border-color:var(--felt);color:var(--on-felt);font-size:1.02rem;min-height:50px}
+.btn.wide{width:100%}
+.btn.danger{color:var(--danger);border-color:var(--danger)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--felt);outline-offset:2px}
+
+.settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label,.lbl{font-size:.8rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stepper{display:grid;grid-template-columns:44px 1fr 44px;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--surface)}
+.stepper button{min-height:44px;border:0;background:var(--felt-soft);font-size:1.25rem;font-weight:600;cursor:pointer}
+.stepper input{min-width:0;width:100%;border:0;background:transparent;text-align:center;font-family:var(--display);font-weight:700;font-size:1.2rem;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.text{min-height:44px;width:100%;border:1px solid var(--line);border-radius:9px;background:var(--surface);padding:0 12px}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{min-height:40px;min-width:52px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:600;cursor:pointer;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.prog{font-size:.9rem;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.prog.done{color:var(--felt)}
+
+.clockbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;padding:8px 8px 8px 14px;background:var(--surface)}
+.clock{font-family:var(--display);font-weight:700;font-size:1.7rem;font-variant-numeric:tabular-nums;min-width:4.2ch;margin-right:auto}
+.clock.zero{color:var(--danger)}
+.clockbar .lbl{order:-1;flex:none}
+
+.games{display:flex;flex-direction:column;gap:8px}
+.game{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.mesa{display:flex;flex-direction:column;align-items:center;line-height:1.1}
+.mesa span{font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mesa b{font-family:var(--display);font-size:1.35rem;font-variant-numeric:tabular-nums}
+.sides{display:flex;flex-direction:column;gap:6px;min-width:0}
+.side{display:flex;align-items:center;gap:8px;min-width:0}
+.pc{flex:none;width:14px;height:14px;border-radius:3px;border:1.5px solid var(--muted);background:var(--piece-w)}
+.pc.b{background:var(--piece-b)}
+.num{flex:none;min-width:2.3em;text-align:center;font-family:var(--display);font-weight:700;font-size:1.05rem;font-variant-numeric:tabular-nums;
+  border:1px solid var(--line);border-radius:7px;padding:1px 4px;background:var(--bg)}
+.nm{min-width:0;overflow-wrap:break-word;font-size:.95rem;line-height:1.2}
+.nm.empty{color:var(--muted)}
+.side.win .num{background:var(--felt);border-color:var(--felt);color:var(--on-felt)}
+.side.draw .num{background:var(--buff);border-color:var(--buff);color:var(--on-buff)}
+.side.lose{color:var(--muted)}
+.res{display:grid;grid-template-columns:repeat(3,46px);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.res button{min-height:46px;border:0;border-left:1px solid var(--line);background:var(--surface);font-weight:600;font-size:.9rem;cursor:pointer;font-variant-numeric:tabular-nums;padding:0}
+.res button:first-child{border-left:0}
+.res button[aria-pressed="true"]{background:var(--felt);color:var(--on-felt)}
+.res button[data-r="d"][aria-pressed="true"]{background:var(--buff);color:var(--on-buff)}
+.res button:disabled{cursor:default;opacity:1}
+.res button:disabled:not([aria-pressed="true"]){color:var(--line)}
+.bye{border:1px dashed var(--line);border-radius:12px;padding:10px 14px;color:var(--muted)}
+.bye b{color:var(--ink)}
+
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:9px 8px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:0}
+td.name{text-align:left;white-space:normal;min-width:12ch;overflow-wrap:break-word}
+td.pts{font-family:var(--display);font-weight:700;font-size:1.05rem}
+td.place{font-family:var(--display);font-weight:700}
+tr.out td{color:var(--muted)}
+tr.top1 td{background:var(--felt-soft)}
+
+.plist{display:flex;flex-direction:column;gap:6px}
+.prow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center}
+.prow .text{min-width:0}
+.sw{display:flex;align-items:center;gap:6px;font-size:.875rem;min-height:44px;cursor:pointer}
+.sw input{width:20px;height:20px;accent-color:var(--felt)}
+details{border:1px solid var(--line);border-radius:12px;padding:12px 16px;background:var(--surface)}
+summary{font-weight:600;cursor:pointer}
+details ol,details ul{margin:10px 0 0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px;max-width:62ch}
+details p{margin-top:12px;max-width:62ch}
+label.btn{display:inline-flex;align-items:center}
+.about{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.about .apptitle{display:flex;flex-direction:column;gap:2px}
+.about .apptitle b{font-family:var(--display);font-size:1.3rem;line-height:1.15}
+.about .apptitle span{color:var(--muted);font-size:.9rem}
+.about h4{margin:0 0 4px;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.about p{max-width:62ch}
+.about ul{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:4px}
+.motto{font-style:italic}
+.upd{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:10;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 12px 10px 16px;max-width:728px;margin:0 auto}
+.upd span{flex:1;min-width:12ch}
+.upd button{min-height:40px;border-radius:9px;border:0;padding:0 14px;background:var(--felt);color:var(--on-felt);font-weight:600;cursor:pointer}
+textarea{width:100%;min-height:160px;border:1px solid var(--line);border-radius:9px;background:var(--surface);padding:10px;font-size:.875rem}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);
+  padding:10px 16px;border-radius:999px;font-size:.9rem;max-width:calc(100% - 32px);z-index:9;text-align:center}
+@media (max-width:560px){
+  .game{grid-template-columns:46px minmax(0,1fr)}
+  .res{grid-column:1/-1;grid-template-columns:repeat(3,1fr)}
+  .clockbar .lbl{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <span class="glyph" aria-hidden="true"></span>
+      <div><h1 id="t-name">Torneo de Ajedrez Escolar</h1><p class="status" id="t-status"></p><p class="appline">Torneo Suizo Escolar · 30 Santo Domingo · versión 1.2</p></div>
+    </div>
+    <span class="cloud" id="cloud">En este dispositivo</span>
+  </header>
+  <nav class="tabs" role="tablist" aria-label="Secciones">
+    <button role="tab" id="tab-ronda" data-act="tab" data-t="ronda">Ronda</button>
+    <button role="tab" id="tab-pos" data-act="tab" data-t="pos">Posiciones</button>
+    <button role="tab" id="tab-jug" data-act="tab" data-t="jug">Jugadores</button>
+    <button role="tab" id="tab-aj" data-act="tab" data-t="aj">Ajustes</button>
+  </nav>
+  <main id="view"></main>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- Lógica del torneo (sin DOM) ---------- */
+function blank(n){
+  var ps=[]; for(var i=1;i<=n;i++) ps.push({id:i,name:"",active:true});
+  return {v:1,name:"Torneo de Ajedrez Escolar",boards:7,rounds:4,minutes:15,players:ps,rondas:[],playoff:null,updatedAt:0,device:""};
+}
+// Puntos se guardan al doble (victoria 2, tablas 1) para no usar decimales.
+function stats(st,upto){
+  var S={};
+  st.players.forEach(function(p){S[p.id]={id:p.id,pts:0,opp:[],col:[],w:0,b:0,bye:0,wait:0,win:0,res:[]};});
+  var R=st.rondas.slice(0,upto==null?st.rondas.length:upto);
+  R.forEach(function(rd,ri){
+    rd.games.forEach(function(g){
+      if(g.b==null){var s=S[g.w]; if(s){s.pts+=2;s.bye++;s.res[ri]="D";} return;}
+      var a=S[g.w],c=S[g.b]; if(!a||!c) return;
+      a.opp.push(c.id); c.opp.push(a.id); a.col.push("w"); c.col.push("b"); a.w++; c.b++;
+      if(g.tanda>0){a.wait++;c.wait++;}
+      if(g.res==="1-0"){a.pts+=2;a.win++;a.res[ri]="1";c.res[ri]="0";}
+      else if(g.res==="0-1"){c.pts+=2;c.win++;a.res[ri]="0";c.res[ri]="1";}
+      else if(g.res==="d"){a.pts++;c.pts++;a.res[ri]="½";c.res[ri]="½";}
+      else{a.res[ri]="·";c.res[ri]="·";}
+    });
+  });
+  return S;
+}
+function pref(s){
+  var want=null,str=0,bal=s.w-s.b,n=s.col.length,last=s.col[n-1];
+  if(bal>0){want="b";str=Math.abs(bal)>=2?3:2;}else if(bal<0){want="w";str=Math.abs(bal)>=2?3:2;}else if(last){want=last==="w"?"b":"w";str=1;}
+  if(n>=2&&s.col[n-1]===s.col[n-2]){want=last==="w"?"b":"w";str=3;}
+  return {want:want,str:str};
+}
+function clash(a,b){
+  var x=pref(a),y=pref(b);
+  if(!x.want||x.want!==y.want) return 0;
+  if(x.str===3&&y.str===3) return 300;
+  if(x.str>=2&&y.str>=2) return x.str+y.str>=5?60:40;
+  return 5;
+}
+function seat(games,boards,S,isLast){
+  var ord=games.map(function(g){return {g:g,top:Math.max(S[g.w].wait,S[g.b].wait),wait:S[g.w].wait+S[g.b].wait};});
+  ord.sort(function(x,y){
+    if(isLast){if(x.g.rk===0)return -1; if(y.g.rk===0)return 1;}
+    return y.top-x.top||y.wait-x.wait||x.g.rk-y.g.rk;
+  });
+  ord.forEach(function(o,k){o.g.tanda=Math.floor(k/boards);});
+  var nT=Math.ceil(games.length/boards);
+  for(var t=0;t<nT;t++){
+    games.filter(function(g){return g.tanda===t;}).sort(function(a,b){return a.rk-b.rk;}).forEach(function(g,m){g.mesa=m+1;});
+  }
+}
+function pairRound(st){
+  var S=stats(st), isLast=st.rondas.length>=st.rounds-1;
+  var list=st.players.filter(function(p){return p.active;}).map(function(p){return p.id;})
+    .sort(function(x,y){return S[y].pts-S[x].pts||x-y;});
+  var bye=null;
+  if(list.length%2===1){
+    for(var i=list.length-1;i>=0;i--){if(!S[list[i]].bye){bye=list[i];break;}}
+    if(bye==null) bye=list[list.length-1];
+    list=list.filter(function(x){return x!==bye;});
+  }
+  var played=function(a,b){return S[a].opp.indexOf(b)>=0;};
+  var nodes=0;
+  function rec(rem,allowRepeat){
+    if(!rem.length) return [];
+    if(++nodes>150000) return null;
+    var p=rem[0],rest=rem.slice(1);
+    var grp=rest.filter(function(x){return S[x].pts===S[p].pts;});
+    var ideal=Math.floor((grp.length+1)/2)-1, cands=[];
+    rest.forEach(function(c,i){
+      var rep=played(p,c); if(rep&&!allowRepeat) return;
+      var gi=grp.indexOf(c);
+      var cost=(S[p].pts-S[c].pts)*1000+(gi>=0?Math.abs(gi-ideal)*10:i*10);
+      cost+=clash(S[p],S[c]);
+      if(rep) cost+=100000;
+      cands.push({c:c,cost:cost});
+    });
+    cands.sort(function(a,b){return a.cost-b.cost;});
+    for(var k=0;k<cands.length;k++){
+      var c=cands[k].c;
+      var r=rec(rest.filter(function(x){return x!==c;}),allowRepeat);
+      if(r) return [[p,c]].concat(r);
+    }
+    return null;
+  }
+  var pairs=rec(list,false);
+  if(!pairs){nodes=0;pairs=rec(list,true);}
+  if(!pairs){pairs=[];for(var j=0;j+1<list.length;j+=2)pairs.push([list[j],list[j+1]]);}
+  // Mejora por intercambio: cambia rivales entre dos mesas si eso evita repetir color sin romper los grupos de puntos.
+  var rankOf={}; list.forEach(function(id,i){rankOf[id]=i;});
+  var pc=function(a,b){return Math.abs(S[a].pts-S[b].pts)*1000+clash(S[a],S[b])+(played(a,b)?100000:0);};
+  var ord2=function(a,b){return rankOf[a]<rankOf[b]?[a,b]:[b,a];};
+  for(var it=0,moved=true;moved&&it<60;it++){
+    moved=false;
+    for(var i1=0;i1<pairs.length;i1++){for(var i2=i1+1;i2<pairs.length;i2++){
+      var A=pairs[i1],B=pairs[i2],cur=pc(A[0],A[1])+pc(B[0],B[1]);
+      var o1=pc(A[0],B[0])+pc(A[1],B[1]),o2=pc(A[0],B[1])+pc(A[1],B[0]);
+      if(o1<cur&&o1<=o2){pairs[i1]=ord2(A[0],B[0]);pairs[i2]=ord2(A[1],B[1]);moved=true;}
+      else if(o2<cur){pairs[i1]=ord2(A[0],B[1]);pairs[i2]=ord2(A[1],B[0]);moved=true;}
+    }}
+  }
+  pairs.sort(function(x,y){return rankOf[x[0]]-rankOf[y[0]];});
+  var games=pairs.map(function(pr,i){
+    var a=pr[0],b=pr[1],x=pref(S[a]),y=pref(S[b]),aWhite;
+    if(x.want&&y.want&&x.want!==y.want) aWhite=x.want==="w";
+    else if(x.want&&!y.want) aWhite=x.want==="w";
+    else if(!x.want&&y.want) aWhite=y.want!=="w";
+    else if(x.want&&y.want){var ax=Math.abs(S[a].w-S[a].b),ay=Math.abs(S[b].w-S[b].b);aWhite=(x.str>y.str||(x.str===y.str&&ax>=ay))?x.want==="w":y.want!=="w";}
+    else aWhite=i%2===0;
+    return {w:aWhite?a:b,b:aWhite?b:a,res:null,rk:i,tanda:0,mesa:i+1};
+  });
+  seat(games,Math.max(1,st.boards),S,isLast);
+  if(bye!=null) games.push({w:bye,b:null,res:"bye",rk:999,tanda:-1,mesa:0});
+  return games;
+}
+function direct(st,a,b){
+  var w=null;
+  st.rondas.forEach(function(rd){rd.games.forEach(function(g){
+    if(g.b==null) return;
+    if((g.w===a&&g.b===b)||(g.w===b&&g.b===a)){
+      if(g.res==="1-0") w=g.w; else if(g.res==="0-1") w=g.b;
+    }
+  });});
+  return w;
+}
+function roundDone(rd){return rd.games.every(function(g){return g.res!=null;});}
+function finished(st){return st.rondas.length>0&&st.rondas.length>=st.rounds&&st.rondas.every(roundDone);}
+function standings(st){
+  var S=stats(st);
+  var rows=st.players.map(function(p){
+    var s=S[p.id];
+    var op=s.opp.map(function(o){return S[o].pts;});
+    for(var k=0;k<s.bye;k++) op.push(0);
+    var buch=op.reduce(function(t,x){return t+x;},0);
+    var cut1=op.length>1?buch-Math.min.apply(null,op):0;
+    return {id:p.id,name:p.name,active:p.active,pts:s.pts,buch:buch,cut1:cut1,win:s.win,res:s.res,played:s.opp.length+s.bye,dir:false,po:false,tie:false};
+  });
+  rows.sort(function(a,b){return b.pts-a.pts||b.buch-a.buch||b.cut1-a.cut1||b.win-a.win||a.id-b.id;});
+  for(var i=0;i<rows.length-1;i++){
+    var a=rows[i],b=rows[i+1];
+    var two=a.pts===b.pts&&(i===0||rows[i-1].pts!==a.pts)&&(i+2>=rows.length||rows[i+2].pts!==a.pts);
+    if(!two) continue;
+    var w=direct(st,a.id,b.id);
+    if(w!=null){a.dir=true;b.dir=true;if(w===b.id){rows[i]=b;rows[i+1]=a;}}
+  }
+  var po=st.playoff;
+  if(po&&po.winner!=null&&rows.length>1){
+    var ids=[rows[0].id,rows[1].id];
+    if(ids.indexOf(po.a)>=0&&ids.indexOf(po.b)>=0&&rows[0].pts===rows[1].pts){
+      rows[0].po=true;rows[1].po=true;
+      if(rows[1].id===po.winner){var t=rows[0];rows[0]=rows[1];rows[1]=t;}
+    }
+  }
+  var same=function(x,y){return x.pts===y.pts&&x.buch===y.buch&&x.cut1===y.cut1&&x.win===y.win&&!(x.dir&&y.dir)&&!(x.po&&y.po);};
+  rows.forEach(function(r,i){
+    r.place=i+1;
+    r.tie=r.played>0&&((i>0&&same(rows[i-1],r))||(i<rows.length-1&&same(r,rows[i+1])));
+  });
+  return rows;
+}
+function needFinal(st,rows){
+  if(!finished(st)||rows.length<2) return null;
+  var a=rows[0],b=rows[1];
+  if(a.pts!==b.pts||a.dir||a.po) return null;
+  var perfect=a.pts===2*st.rondas.length;
+  var eq=function(x,y){return x.buch===y.buch&&x.cut1===y.cut1&&x.win===y.win;};
+  if(!perfect&&!eq(a,b)) return null;
+  if(rows.length>2&&rows[2].pts===a.pts&&(perfect||eq(rows[2],a))) return null;
+  return {a:a.id,b:b.id};
+}
+if(typeof document==="undefined"){
+  module.exports={blank:blank,stats:stats,pairRound:pairRound,standings:standings,needFinal:needFinal,finished:finished,roundDone:roundDone,direct:direct};
+  return;
+}
+
+/* ---------- Estado, guardado y nube ---------- */
+var LS_KEY="torneo-suizo-v1";
+var DEVICE=Math.random().toString(36).slice(2,10);
+var LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+function loadLocal(){try{var s=localStorage.getItem(LS_KEY);var d=s?JSON.parse(s):null;return d&&Array.isArray(d.players)&&Array.isArray(d.rondas)?d:null;}catch(e){return null;}}
+function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
+var state=loadLocal()||blank(22);
+var VERSION="1.2";
+var ui={tab:"ronda",round:null,unlock:false,confirm:null,copy:null,copyMsg:"",manual:false,sorteo:false,sorteoText:"",restore:null};
+var readOnly=false,docRef=null,writing=false,dirty=false,saveTimer=null,firstSnap=true,pendingRender=false;
+
+function setCloud(mode){
+  var el=document.getElementById("cloud"); if(!el) return;
+  el.className="cloud"+(mode==="sync"?" sync":"");
+  el.textContent=mode==="sync"?"Guardado en la nube":mode==="ro"?"Solo lectura":"En este dispositivo";
+}
+function queueCloud(){
+  if(!docRef||readOnly) return;
+  dirty=true; clearTimeout(saveTimer); saveTimer=setTimeout(flush,500);
+}
+function flush(){
+  if(writing||!dirty||!docRef) return;
+  writing=true; dirty=false;
+  docRef.set(JSON.parse(JSON.stringify(state))).then(function(){setCloud("sync");},function(e){
+    if(e&&e.code==="invalid_argument"){readOnly=true;setCloud("ro");render();}
+    else setCloud("local");
+  }).then(function(){writing=false; if(dirty) flush();});
+}
+function initCloud(){
+  if(!window.claude||!window.claude.use) return;
+  Promise.all([window.claude.use("db"),window.claude.use("user")]).then(function(r){
+    var db=r[0],user=r[1];
+    if(!db) return;
+    var ready=user?user.can("data.write"):Promise.resolve(null);
+    ready.then(function(cw){
+      if(cw===false){readOnly=true;render();}
+      docRef=db.doc("torneos/actual");
+      docRef.onSnapshot(function(snap){
+        var first=firstSnap; firstSnap=false;
+        if(!snap.exists){
+          if(first&&!readOnly&&state.updatedAt>0) queueCloud();
+          setCloud(readOnly?"ro":"sync"); return;
+        }
+        if(snap.metadata&&snap.metadata.hasPendingWrites) return;
+        var d=snap.data();
+        if(!d||!Array.isArray(d.players)||!Array.isArray(d.rondas)) return;
+        if(readOnly||(d.updatedAt||0)>(state.updatedAt||0)){
+          state=JSON.parse(JSON.stringify(d)); saveLocal(); deferRender();
+        }else if(first&&!readOnly&&(d.updatedAt||0)<(state.updatedAt||0)){
+          queueCloud();
+        }
+        setCloud(readOnly?"ro":"sync");
+      },function(){setCloud("local");});
+    });
+  },function(){});
+}
+function mutate(fn,quiet){
+  if(readOnly) return;
+  fn(state);
+  state.updatedAt=Date.now(); state.device=DEVICE;
+  saveLocal(); queueCloud();
+  if(!quiet) render();
+}
+function deferRender(){
+  var a=document.activeElement;
+  if(a&&(a.tagName==="INPUT"||a.tagName==="TEXTAREA")&&a.type!=="checkbox"){pendingRender=true;return;}
+  render();
+}
+
+/* ---------- Utilidades de vista ---------- */
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function pname(id){for(var i=0;i<state.players.length;i++){if(state.players[i].id===id)return state.players[i].name||"";}return "";}
+function activeCount(){return state.players.filter(function(p){return p.active;}).length;}
+function tandasPerRound(){return Math.max(1,Math.ceil(Math.floor(activeCount()/2)/Math.max(1,state.boards)));}
+function fmtDur(min){var h=Math.floor(min/60),m=min%60;return (h?h+" h ":"")+(m||!h?m+" min":"").trim();}
+function estimate(){return 10+state.rounds*tandasPerRound()*(state.minutes+5);}
+function fmtPts(p2){var w=Math.floor(p2/2);return p2%2?(w?w+"½":"½"):String(w);}
+function toast(msg){
+  var t=document.getElementById("toast"); t.textContent=msg; t.hidden=false;
+  clearTimeout(toast.tm); toast.tm=setTimeout(function(){t.hidden=true;},2600);
+}
+var dis=function(){return readOnly?" disabled":"";};
+
+/* ---------- Reloj de tanda ---------- */
+var T={left:0,end:0,run:false,ac:null};
+function tReset(){T.run=false;T.left=state.minutes*60000;}
+function tLeft(){return T.run?Math.max(0,T.end-Date.now()):T.left;}
+function fmtClock(ms){var s=Math.ceil(ms/1000),m=Math.floor(s/60);s=s%60;return (m<10?"0":"")+m+":"+(s<10?"0":"")+s;}
+function beep(){
+  try{
+    if(!T.ac) return;
+    [0,0.35,0.7].forEach(function(dt){
+      var o=T.ac.createOscillator(),g=T.ac.createGain();
+      o.frequency.value=880; o.connect(g); g.connect(T.ac.destination);
+      g.gain.setValueAtTime(0.25,T.ac.currentTime+dt);
+      g.gain.exponentialRampToValueAtTime(0.001,T.ac.currentTime+dt+0.28);
+      o.start(T.ac.currentTime+dt); o.stop(T.ac.currentTime+dt+0.3);
+    });
+  }catch(e){}
+}
+tReset();
+setInterval(function(){
+  var el=document.getElementById("clock"); if(!el) return;
+  var l=tLeft(); el.textContent=fmtClock(l);
+  if(T.run&&l<=0){T.run=false;T.left=0;beep();toast("Se acabó el tiempo de la tanda");render();}
+},250);
+
+/* ---------- Pantalla encendida durante la ronda ---------- */
+var WL=null,wlBusy=false;
+function syncWake(){
+  try{
+    var want=state.rondas.length>0&&!finished(state)&&document.visibilityState==="visible";
+    if(want&&!WL&&!wlBusy&&navigator.wakeLock&&navigator.wakeLock.request){
+      wlBusy=true;
+      navigator.wakeLock.request("screen").then(function(l){wlBusy=false;WL=l;l.addEventListener("release",function(){WL=null;});},function(){wlBusy=false;});
+    }else if(!want&&WL){WL.release();WL=null;}
+  }catch(e){wlBusy=false;}
+}
+document.addEventListener("visibilitychange",syncWake);
+
+/* ---------- Archivos: respaldo y CSV ---------- */
+function stamp(){var d=new Date(),z=function(n){return (n<10?"0":"")+n;};return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())+"_"+z(d.getHours())+z(d.getMinutes());}
+function showText(txt,msg){ui.copy=txt;ui.copyMsg=msg;render();var ta=document.getElementById("copybox");if(ta){ta.focus();ta.select();}}
+function saveFile(name,text,mime){
+  var manual=function(){showText(text,"No se pudo guardar el archivo aquí. Copia este texto y guárdalo en un archivo llamado "+name+".");};
+  if(window.claude&&window.claude.use){
+    window.claude.use("downloads").then(function(dl){
+      if(!dl) return manual();
+      dl.save({filename:name,data:text}).then(function(){toast("Archivo listo: "+name);},function(e){
+        var c=e&&e.code;
+        if(c==="declined") return;
+        if(c==="rate_limited") return toast("Ya hay una descarga pendiente. Intenta de nuevo en un momento.");
+        manual();
+      });
+    },manual);
+    return;
+  }
+  try{
+    var blob=new Blob([text],{type:mime}),url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download=name;document.body.appendChild(a);a.click();
+    setTimeout(function(){URL.revokeObjectURL(url);a.remove();},1500);
+    toast("Archivo guardado: "+name);
+  }catch(e){manual();}
+}
+function backupText(){return JSON.stringify({app:"Torneo Suizo Escolar",version:VERSION,guardado:new Date().toISOString(),torneo:state},null,1);}
+function parseBackup(txt){
+  var d=JSON.parse(txt); if(d&&d.torneo) d=d.torneo;
+  if(!d||!Array.isArray(d.players)||!Array.isArray(d.rondas)) throw new Error("formato");
+  d.players.forEach(function(p){if(typeof p.id!=="number")throw new Error("formato");});
+  d.rondas.forEach(function(r){if(!r||!Array.isArray(r.games))throw new Error("formato");});
+  var base=blank(d.players.length);
+  Object.keys(base).forEach(function(k){if(d[k]==null)d[k]=base[k];});
+  return d;
+}
+function csvText(){
+  var rows=standings(state),n=state.rondas.length;
+  var q=function(v){v=String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  var num=function(p2){return String(p2/2);};
+  var head=["Lugar","No.","Alumno"];
+  for(var i=0;i<n;i++) head.push("R"+(i+1));
+  head=head.concat(["Puntos","Buchholz","Buchholz-1","Ganadas","Estado"]);
+  var out=[head.map(q).join(",")];
+  var cell={"1":"1","½":"0.5","0":"0","D":"1 (descanso)","·":""};
+  rows.forEach(function(r){
+    var line=[r.place+(r.tie?"=":""),r.id,r.name||""];
+    for(var k=0;k<n;k++) line.push(r.res[k]!=null?cell[r.res[k]]:"");
+    line=line.concat([num(r.pts),num(r.buch),num(r.cut1),r.win,r.active?"Juega":"Retirado"]);
+    out.push(line.map(q).join(","));
+  });
+  return "\uFEFF"+out.join("\r\n");
+}
+
+/* ---------- Sorteo de números ---------- */
+function shuffle(a){
+  for(var i=a.length-1;i>0;i--){
+    var r;
+    try{var u=new Uint32Array(1);crypto.getRandomValues(u);r=u[0]%(i+1);}catch(e){r=Math.floor(Math.random()*(i+1));}
+    var t=a[i];a[i]=a[r];a[r]=t;
+  }
+  return a;
+}
+function sorteoNames(){
+  return ui.sorteoText.split(/\r?\n/).map(function(l){return l.split("\t").map(function(c){return c.trim();}).filter(Boolean).join(" ").replace(/\s+/g," ").trim();}).filter(Boolean).slice(0,200);
+}
+
+/* ---------- Vistas ---------- */
+function stepper(key,label,val,min,max,off){
+  return '<div class="field"><label for="in-'+key+'">'+label+'</label><div class="stepper">'+
+    '<button type="button" id="dec-'+key+'" data-act="step" data-k="'+key+'" data-d="-1" aria-label="Menos '+label.toLowerCase()+'"'+(off||readOnly?" disabled":"")+'>−</button>'+
+    '<input id="in-'+key+'" type="number" inputmode="numeric" data-k="'+key+'" min="'+min+'" max="'+max+'" value="'+val+'"'+(off||readOnly?" disabled":"")+'>'+
+    '<button type="button" id="inc-'+key+'" data-act="step" data-k="'+key+'" data-d="1" aria-label="Más '+label.toLowerCase()+'"'+(off||readOnly?" disabled":"")+'>+</button>'+
+    '</div></div>';
+}
+function settingsBlock(){
+  var started=state.rondas.length>0;
+  return '<div class="settings">'+
+    stepper("players","Jugadores",state.players.length,2,200,started)+
+    stepper("boards","Tableros",state.boards,1,100,false)+
+    stepper("rounds","Rondas",state.rounds,Math.max(1,state.rondas.length),15,false)+
+    stepper("minutes","Minutos por tanda",state.minutes,3,120,false)+
+    '</div>'+summaryLine();
+}
+function summaryLine(){
+  var n=activeCount(),g=Math.floor(n/2),t=tandasPerRound();
+  var txt=g+" partidas por ronda en "+(t===1?"una sola tanda":t+" tandas")+
+    (n%2?"; un jugador descansa cada ronda":"")+". Duración estimada: "+fmtDur(estimate())+".";
+  if(t===1&&state.boards>g) txt+=" Te sobran "+(state.boards-g)+" tableros.";
+  return '<p class="note">'+txt+'</p>';
+}
+function sideHtml(id,color,cls){
+  var nm=pname(id);
+  return '<div class="side '+cls+'"><i class="pc '+color+'" title="'+(color==="w"?"Blancas":"Negras")+'"></i><b class="num">'+id+'</b>'+
+    '<span class="nm'+(nm?"":" empty")+'">'+(nm?esc(nm):(color==="w"?"blancas":"negras"))+'</span></div>';
+}
+function gameHtml(g,ri,gi,editable,preview){
+  var wc="",bc="";
+  if(g.res==="1-0"){wc="win";bc="lose";}else if(g.res==="0-1"){wc="lose";bc="win";}else if(g.res==="d"){wc="draw";bc="draw";}
+  var h='<div class="game"><div class="mesa"><span>Mesa</span><b>'+g.mesa+'</b></div><div class="sides">'+sideHtml(g.w,"w",wc)+sideHtml(g.b,"b",bc)+'</div>';
+  if(!preview){
+    var opts=[["1-0","1–0","Ganan blancas"],["d","½–½","Tablas"],["0-1","0–1","Ganan negras"]];
+    h+='<div class="res" role="group" aria-label="Resultado de la mesa '+g.mesa+'">';
+    opts.forEach(function(o,k){
+      h+='<button type="button" id="r-'+ri+'-'+gi+'-'+k+'" data-act="res" data-ri="'+ri+'" data-gi="'+gi+'" data-r="'+o[0]+'" aria-pressed="'+(g.res===o[0])+'" title="'+o[2]+'"'+(editable?"":" disabled")+'>'+o[1]+'</button>';
+    });
+    h+='</div>';
+  }
+  return h+'</div>';
+}
+function gamesHtml(games,ri,editable,preview){
+  var h="",nT=0;
+  games.forEach(function(g){if(g.tanda+1>nT)nT=g.tanda+1;});
+  for(var t=0;t<nT;t++){
+    var list=[];
+    games.forEach(function(g,gi){if(g.tanda===t)list.push({g:g,gi:gi});});
+    list.sort(function(a,b){return a.g.mesa-b.g.mesa;});
+    if(nT>1){
+      h+='<h3>Tanda '+LETTERS[t]+' <small>· '+list.length+(list.length===1?" partida":" partidas")+
+        (t>0?" · entran conforme se desocupen tableros":"")+'</small></h3>';
+    }
+    h+='<div class="games">'+list.map(function(x){return gameHtml(x.g,ri,x.gi,editable,preview);}).join("")+'</div>';
+  }
+  games.forEach(function(g){
+    if(g.b==null){var nm=pname(g.w);h+='<p class="bye">Descansa <b>'+g.w+(nm?" · "+esc(nm):"")+'</b> y recibe 1 punto.</p>';}
+  });
+  return h;
+}
+function viewRonda(){
+  var started=state.rondas.length>0,h="";
+  if(readOnly) h+='<p class="note">Estás viendo el torneo en vivo. Solo quien lo organiza puede capturar resultados.</p>';
+  if(!started){
+    var prev=pairRound(state);
+    h+='<section class="panel"><h2>Arma tu torneo</h2>'+
+      '<p class="lead">Indica cuántos jugadores y tableros tienes. El rol y las tandas se ajustan solos.</p>'+
+      settingsBlock()+
+      '<button type="button" class="btn primary wide" id="b-start" data-act="start"'+(activeCount()<2||readOnly?" disabled":"")+'>Iniciar torneo</button>'+
+      '<button type="button" class="btn wide" id="b-manual" data-act="manual">Ver manual rápido</button></section>';
+    h+='<div class="stack"><h2>Ronda 1 <small>vista previa</small></h2>'+
+      '<p class="note">Cada alumno juega con el número que le tocó en el sorteo. El primero de cada mesa lleva blancas.</p>'+
+      gamesHtml(prev,0,false,true)+'</div>';
+    return h;
+  }
+  var last=state.rondas.length-1;
+  var ri=ui.round==null?last:Math.min(ui.round,last);
+  var rd=state.rondas[ri],real=rd.games.filter(function(g){return g.b!=null;});
+  var doneN=real.filter(function(g){return g.res!=null;}).length,all=doneN===real.length;
+  var isCurrent=ri===last,editable=!readOnly&&(isCurrent||ui.unlock);
+  if(state.rondas.length>1){
+    h+='<div class="chips" role="group" aria-label="Elegir ronda">';
+    state.rondas.forEach(function(_,i){h+='<button type="button" class="chip" id="chip-'+i+'" data-act="round" data-i="'+i+'" aria-pressed="'+(i===ri)+'">R'+(i+1)+'</button>';});
+    h+='</div>';
+  }
+  h+='<div class="row between"><h2>Ronda '+(ri+1)+' <small>de '+state.rounds+'</small></h2>'+
+     '<span class="prog'+(all?" done":"")+'">'+(all?"Ronda completa":doneN+" de "+real.length+" resultados")+'</span></div>';
+  if(isCurrent&&!all){
+    var l=tLeft();
+    h+='<div class="clockbar"><span class="clock'+(l<=0?" zero":"")+'" id="clock">'+fmtClock(l)+'</span><span class="lbl">Reloj de tanda</span>'+
+       '<button type="button" class="btn" id="b-tgo" data-act="'+(T.run?"t-pause":"t-start")+'">'+(T.run?"Pausar":"Iniciar")+'</button>'+
+       '<button type="button" class="btn" id="b-trs" data-act="t-reset">Reiniciar</button></div>';
+  }
+  if(!isCurrent&&!readOnly){
+    h+=ui.unlock?'<p class="note">Corrigiendo una ronda anterior. Los emparejamientos que ya se hicieron no cambian; solo se actualizan los puntos.</p>'
+      :'<div class="row"><p class="note">Ronda cerrada.</p><button type="button" class="btn" id="b-unlock" data-act="unlock">Corregir resultados</button></div>';
+  }
+  h+=gamesHtml(rd.games,ri,editable,false);
+  if(isCurrent){
+    var fin=finished(state);
+    h+='<div class="stack">';
+    if(fin){
+      h+='<div class="banner"><b class="big">Torneo terminado</b><p>Ya están todos los resultados de las '+state.rounds+' rondas.</p>'+
+         '<button type="button" class="btn primary" id="b-gopos" data-act="tab" data-t="pos">Ver posiciones finales</button></div>';
+    }else if(state.rondas.length<state.rounds){
+      h+='<button type="button" class="btn primary wide" id="b-next" data-act="next"'+(all&&!readOnly?"":" disabled")+'>Emparejar ronda '+(state.rondas.length+1)+'</button>';
+      if(!all) h+='<p class="note">Faltan '+(real.length-doneN)+' resultados para emparejar la siguiente ronda.</p>';
+    }
+    h+='<div class="row"><button type="button" class="btn" id="b-copyr" data-act="copy-r">Copiar emparejamientos</button>';
+    if(!readOnly) h+='<button type="button" class="btn danger" id="b-askundo" data-act="ask" data-c="undo">Deshacer esta ronda</button>';
+    h+='</div>';
+    if(ui.confirm==="undo"){
+      h+='<div class="banner buff"><p>Se borran los emparejamientos y resultados de la ronda '+(last+1)+'. Las rondas anteriores se conservan.</p>'+
+         '<div class="row"><button type="button" class="btn danger" id="b-undo" data-act="undo">Sí, deshacer</button><button type="button" class="btn" id="b-cancel" data-act="cancel">Cancelar</button></div></div>';
+    }
+    h+='</div>';
+  }else{
+    h+='<div class="row"><button type="button" class="btn" id="b-copyr" data-act="copy-r">Copiar emparejamientos</button></div>';
+  }
+  h+=copyBox();
+  return h;
+}
+function copyBox(){
+  if(!ui.copy) return "";
+  return '<div class="stack"><p class="note">'+esc(ui.copyMsg||"No se pudo copiar automáticamente. Selecciona el texto y cópialo.")+'</p>'+
+    '<textarea id="copybox" readonly>'+esc(ui.copy)+'</textarea>'+
+    '<div class="row"><button type="button" class="btn" id="b-closecopy" data-act="close-copy">Cerrar</button></div></div>';
+}
+function viewPos(){
+  var rows=standings(state),n=state.rondas.length,h="",fin=finished(state);
+  var nf=needFinal(state,rows),lab=function(r){return r.id+(r.name?" · "+esc(r.name):"");};
+  if(n===0){
+    h+='<h2>Posiciones</h2><p class="lead">La tabla se llena sola cuando captures los resultados de cada ronda.</p>';
+  }else if(nf){
+    var A=rows[0],B=rows[1];
+    h+='<div class="banner buff"><b class="big">Final de desempate</b>'+
+       '<p>'+lab(A)+' y '+lab(B)+' terminaron empatados en primer lugar. Jueguen una partida a 5 min por jugador y registra quién ganó.</p>'+
+       (readOnly?"":'<div class="row"><button type="button" class="btn" id="b-po1" data-act="po" data-a="'+A.id+'" data-b="'+B.id+'" data-w="'+A.id+'">Ganó '+A.id+'</button>'+
+       '<button type="button" class="btn" id="b-po2" data-act="po" data-a="'+A.id+'" data-b="'+B.id+'" data-w="'+B.id+'">Ganó '+B.id+'</button></div>')+'</div>';
+  }else if(fin){
+    h+='<div class="banner"><h3>Campeón</h3><b class="big">'+lab(rows[0])+'</b>'+
+       '<p>'+(rows[0].po?"Ganó la final de desempate. ":"")+fmtPts(rows[0].pts)+' de '+n+' puntos.'+
+       (rows[1]?' Segundo lugar: '+lab(rows[1])+'.':'')+(rows[2]?' Tercer lugar: '+lab(rows[2])+'.':'')+'</p>'+
+       (rows[0].po&&!readOnly?'<div class="row"><button type="button" class="btn" id="b-poclr" data-act="po-clear">Cambiar resultado de la final</button></div>':"")+'</div>';
+  }else{
+    h+='<h2>Posiciones <small>tras '+n+(n===1?" ronda":" rondas")+'</small></h2>';
+  }
+  h+='<div class="tablewrap"><table><thead><tr><th>Lugar</th><th>No.</th><th style="text-align:left">Alumno</th>';
+  for(var i=0;i<Math.max(n,1);i++) h+='<th>R'+(i+1)+'</th>';
+  h+='<th>Pts</th><th title="Buchholz">Bch</th><th title="Buchholz sin el rival más débil">Bch-1</th><th title="Partidas ganadas">Gan</th></tr></thead><tbody>';
+  var anyTie=false;
+  rows.forEach(function(r,idx){
+    if(r.tie) anyTie=true;
+    h+='<tr class="'+(r.active?"":"out ")+(idx===0&&fin&&!nf?"top1":"")+'"><td class="place">'+(n?r.place+(r.tie?"=":""):"–")+'</td><td>'+r.id+'</td>'+
+       '<td class="name">'+(r.name?esc(r.name):"—")+(r.active?"":" (retirado)")+'</td>';
+    for(var k=0;k<Math.max(n,1);k++) h+='<td>'+(r.res[k]||"–")+'</td>';
+    h+='<td class="pts">'+fmtPts(r.pts)+'</td><td>'+fmtPts(r.buch)+'</td><td>'+fmtPts(r.cut1)+'</td><td>'+r.win+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  h+='<p class="note">Desempates, en orden: partida entre ellos; Bch (Buchholz, suma de puntos de los rivales); Bch-1 (Buchholz sin el rival más débil); Gan (partidas ganadas). D es descanso.'+
+     (anyTie?' El signo = marca un empate sin resolver: se decide con una partida rápida a 5 min.':'')+'</p>';
+  h+='<div class="row"><button type="button" class="btn" id="b-copys" data-act="copy-s">Copiar posiciones</button>'+
+     '<button type="button" class="btn" id="b-csv" data-act="csv">Exportar a Excel (CSV)</button></div>'+copyBox();
+  return h;
+}
+function viewJug(){
+  var started=state.rondas.length>0;
+  var h='<h2>Jugadores <small>'+activeCount()+' juegan</small></h2>'+
+    '<p class="lead">El número es el del sorteo; escribe el nombre cuando sepas a quién le tocó. Desmarca “Juega” si alguien falta o se retira y deja de entrar al emparejamiento.</p>';
+  if(!started&&!readOnly){
+    h+='<details id="sorteo"'+(ui.sorteo?" open":"")+'><summary>Sorteo automático de números</summary>'+
+      '<p>Pega la lista de alumnos, uno por renglón; puedes copiarla de Excel. La app reparte los números al azar y ajusta la cantidad de jugadores.</p>'+
+      '<textarea id="in-sorteo" aria-label="Lista de alumnos para el sorteo" placeholder="María Fernanda López&#10;José Ángel Pérez&#10;…">'+esc(ui.sorteoText)+'</textarea>'+
+      '<div class="row" style="margin-top:10px"><button type="button" class="btn primary" id="b-sortear" data-act="'+(state.players.some(function(p){return p.name;})?"ask":"sortear")+'" data-c="sorteo">Sortear números</button></div>';
+    if(ui.confirm==="sorteo"){
+      h+='<div class="banner buff" style="margin-top:10px"><p>Ya hay nombres capturados. El sorteo los reemplaza con la lista pegada.</p>'+
+         '<div class="row"><button type="button" class="btn danger" id="b-sortear2" data-act="sortear">Sí, sortear</button><button type="button" class="btn" id="b-cancel" data-act="cancel">Cancelar</button></div></div>';
+    }
+    h+='</details>';
+  }
+  h+='<div class="plist">';
+  state.players.forEach(function(p){
+    h+='<div class="prow"><b class="num">'+p.id+'</b>'+
+       '<input class="text pname" id="nombre-'+p.id+'" data-id="'+p.id+'" type="text" autocomplete="off" maxlength="60" placeholder="Nombre del alumno" aria-label="Nombre del jugador '+p.id+'" value="'+esc(p.name)+'"'+dis()+'>'+
+       '<label class="sw"><input type="checkbox" class="pact" id="act-'+p.id+'" data-id="'+p.id+'"'+(p.active?" checked":"")+dis()+'> Juega</label></div>';
+  });
+  h+='</div>';
+  if(!readOnly){
+    h+='<div class="row"><button type="button" class="btn" id="b-addp" data-act="addp">Agregar jugador '+(state.players.length+1)+'</button></div>';
+    if(started) h+='<p class="note">Quien se agrega con el torneo empezado entra con 0 puntos desde la siguiente ronda.</p>';
+  }
+  h+='<div class="row"><button type="button" class="btn" id="b-copyp" data-act="copy-p">Copiar jugadores</button></div>'+copyBox();
+  return h;
+}
+function manualHtml(){
+  return '<details id="manual"'+(ui.manual?" open":"")+'><summary>Manual rápido</summary><ol>'+
+    '<li><b>Configura.</b> En la pestaña Ronda indica jugadores, tableros, rondas y minutos por tanda. Abajo aparece la vista previa de la ronda 1.</li>'+
+    '<li><b>Sortea los números.</b> Cada alumno saca su número, o pega la lista en Jugadores › Sorteo automático y la app los reparte al azar. Los nombres se pueden escribir antes o después de empezar.</li>'+
+    '<li><b>Marca ausentes.</b> En Jugadores desmarca “Juega” a quien no llegó, antes de iniciar.</li>'+
+    '<li><b>Inicia el torneo.</b> Toca “Iniciar torneo” y sienta a los alumnos según su mesa. El primero de cada mesa lleva blancas.</li>'+
+    '<li><b>Arranca el reloj.</b> Toca “Iniciar” en el reloj de tanda cuando todos empiecen. El tiempo es por partida, no por jugador; al sonar, las partidas abiertas se definen por material.</li>'+
+    '<li><b>Captura resultados.</b> En cada mesa toca 1–0 (ganan blancas), ½–½ (tablas) o 0–1 (ganan negras). Para corregir, toca otra opción.</li>'+
+    '<li><b>Empareja la siguiente ronda.</b> Con todos los resultados capturados se activa “Emparejar ronda 2”. Repite los pasos 5 a 7 hasta la última ronda.</li>'+
+    '<li><b>Premia.</b> En Posiciones aparecen el campeón y los lugares. Si hay empate en primer lugar, la app pide el resultado de la final de desempate.</li></ol>'+
+    '<p><b>Conteo de material al terminar el tiempo</b></p><ul>'+
+    '<li>Se cuentan solo las piezas que siguen dentro del tablero: dama 9, torre 5, alfil 3, caballo 3, peón 1. El rey no cuenta.</li>'+
+    '<li>Un peón coronado vale como la pieza en que se convirtió.</li>'+
+    '<li>Con material igual son tablas. Si hay jaque mate, gana quien lo dio, sin contar piezas.</li></ul>'+
+    '<p><b>Si algo sale mal</b></p><ul>'+
+    '<li><b>Emparejaste antes de tiempo:</b> “Deshacer esta ronda” borra solo la ronda actual.</li>'+
+    '<li><b>Resultado mal capturado en una ronda anterior:</b> abre esa ronda con los botones R1, R2… y toca “Corregir resultados”.</li>'+
+    '<li><b>Alguien llega tarde o se retira:</b> agrégalo o desmárcalo en Jugadores. Aplica desde la siguiente ronda.</li>'+
+    '<li><b>Consigues más tableros:</b> cambia el número en Ajustes. Con tableros suficientes para todas las partidas se juega en una sola tanda.</li>'+
+    '<li><b>Quieres empezar de cero:</b> “Reiniciar torneo”, al final de esta pantalla, borra rondas y resultados y conserva los nombres.</li>'+
+    '<li><b>Cambias de equipo o temes perder el torneo:</b> en Ajustes › Respaldo toca “Guardar respaldo” y, en el otro equipo, “Restaurar respaldo”.</li></ul>'+
+    '<p><b>Sin internet.</b> Todo se guarda en este navegador. No borres sus datos ni uses ventana de incógnito durante el torneo, y lleva todo el torneo en un solo equipo. Mientras hay una ronda en curso, la app pide mantener la pantalla encendida, si el navegador lo permite. Instalada desde su enlace, abre sin internet desde el ícono.</p></details>';
+}
+function viewAj(){
+  var h='<h2>Ajustes</h2><div class="field"><label for="in-name">Nombre del torneo</label>'+
+    '<input class="text" id="in-name" type="text" maxlength="80" value="'+esc(state.name)+'"'+dis()+'></div>'+settingsBlock();
+  if(state.rondas.length>0) h+='<p class="note">Con el torneo empezado, los jugadores se agregan o retiran en la pestaña Jugadores. Un cambio de tableros reacomoda la ronda actual solo si aún no tiene resultados.</p>';
+  h+=manualHtml();
+  h+='<details><summary>Cómo empareja la app</summary><ol>'+
+    '<li>Ordena a los jugadores por puntos: victoria 1, tablas ½, derrota 0.</li>'+
+    '<li>Empareja dentro del mismo grupo de puntos, mitad alta contra mitad baja. Si sobra uno, juega contra el mejor del grupo siguiente.</li>'+
+    '<li>Nadie repite rival y los colores se alternan cuando se puede.</li>'+
+    '<li>Si hay menos tableros que partidas, reparte la ronda en tandas y rota a quienes ya esperaron.</li>'+
+    '<li>Con jugadores impares descansa el de menor puntaje que no haya descansado y recibe 1 punto.</li>'+
+    '<li>Desempates: partida entre ellos, Buchholz, Buchholz sin el rival más débil y número de partidas ganadas. Si sigue el empate, partida rápida a 5 min.</li></ol></details>';
+  h+='<div class="stack"><h3>Respaldo</h3><p class="note">Guarda el torneo completo en un archivo (JSON) para no perderlo o para pasarlo a otro equipo.</p>'+
+    '<div class="row"><button type="button" class="btn" id="b-backup" data-act="backup">Guardar respaldo</button>'+
+    (readOnly?'':'<label class="btn" for="in-restore">Restaurar respaldo</label><input type="file" id="in-restore" accept=".json,application/json" hidden>')+'</div>';
+  if(ui.confirm==="restore"&&ui.restore){
+    var R=ui.restore;
+    h+='<div class="banner buff"><p>El respaldo “'+esc(R.name||"Torneo")+'” tiene '+R.players.length+' jugadores y '+R.rondas.length+(R.rondas.length===1?' ronda':' rondas')+'. Restaurarlo reemplaza el torneo actual.</p>'+
+       '<div class="row"><button type="button" class="btn danger" id="b-restore" data-act="restore">Sí, restaurar</button><button type="button" class="btn" id="b-cancel" data-act="cancel">Cancelar</button></div></div>';
+  }
+  h+='</div>';
+  if(!readOnly){
+    h+='<div class="stack"><h3>Empezar de nuevo</h3>';
+    if(ui.confirm==="reset"){
+      h+='<div class="banner buff"><p>Se borran todas las rondas y resultados. Los nombres y ajustes se conservan.</p>'+
+         '<div class="row"><button type="button" class="btn danger" id="b-reset" data-act="reset">Sí, reiniciar</button><button type="button" class="btn" id="b-cancel" data-act="cancel">Cancelar</button></div></div>';
+    }else{
+      h+='<div class="row"><button type="button" class="btn danger" id="b-askreset" data-act="ask" data-c="reset">Reiniciar torneo</button></div>';
+    }
+    h+='</div>';
+  }
+  h+=aboutHtml();
+  return h;
+}
+function aboutHtml(){
+  return '<section class="about" id="acerca" aria-label="Acerca de"><h3>Acerca de</h3>'+
+    '<div class="apptitle"><b>Torneo Suizo Escolar</b><span>30 Santo Domingo · versión '+VERSION+'</span></div>'+
+    '<div><h4>Creada por</h4><p><b>Christian Reyes Guzmán</b><br>Docente del Plantel 30 Santo Domingo<br>Colegio de Bachilleres de Chiapas</p></div>'+
+    '<p class="motto">Hecha por un docente para docentes: organiza un torneo de ajedrez con emparejamientos automáticos en minutos, con o sin internet.</p>'+
+    '<div><h4>Tecnología</h4><ul>'+
+    '<li>Aplicación web progresiva (PWA)</li>'+
+    '<li>Lenguajes: HTML5, CSS3 y JavaScript</li>'+
+    '<li>Datos: localStorage en el dispositivo</li>'+
+    '<li>Archivos: JSON (respaldos) y CSV (resultados)</li>'+
+    '<li>Emparejamiento: sistema suizo con desempates Buchholz, programado sin librerías externas</li>'+
+    '</ul></div></section>';
+}
+function render(){
+  pendingRender=false;
+  var keep=document.activeElement&&document.activeElement.id;
+  document.getElementById("t-name").textContent=state.name||"Torneo de Ajedrez Escolar";
+  var n=state.rondas.length;
+  document.getElementById("t-status").textContent=(n?(finished(state)?"Terminado":"Ronda "+n+" de "+state.rounds):"Sin iniciar")+
+    " · "+activeCount()+" jugadores · "+state.boards+(state.boards===1?" tablero":" tableros");
+  ["ronda","pos","jug","aj"].forEach(function(t){document.getElementById("tab-"+t).setAttribute("aria-selected",String(ui.tab===t));});
+  var v=document.getElementById("view");
+  v.innerHTML=ui.tab==="ronda"?viewRonda():ui.tab==="pos"?viewPos():ui.tab==="jug"?viewJug():viewAj();
+  if(keep){var el=document.getElementById(keep); if(el&&el!==document.activeElement){try{el.focus({preventScroll:true});}catch(e){}}}
+  syncWake();
+}
+
+/* ---------- Acciones ---------- */
+function setNum(k,v){
+  var lim={players:[2,200],boards:[1,100],rounds:[Math.max(1,state.rondas.length),15],minutes:[3,120]}[k];
+  if(!lim||isNaN(v)) return render();
+  v=Math.max(lim[0],Math.min(lim[1],Math.round(v)));
+  if(k==="players"&&state.rondas.length>0) return render();
+  mutate(function(s){
+    if(k==="players"){
+      while(s.players.length<v) s.players.push({id:s.players.length+1,name:"",active:true});
+      s.players.length=v;
+    }else s[k]=v;
+    if(k==="boards"&&s.rondas.length){
+      var li=s.rondas.length-1,real=s.rondas[li].games.filter(function(g){return g.b!=null;});
+      if(real.every(function(g){return g.res==null;})) seat(real,s.boards,stats(s,li),li>=s.rounds-1);
+    }
+  });
+  if(k==="minutes"&&!T.run){tReset();render();}
+}
+function roundText(ri){
+  var rd=state.rondas[ri],out=[(state.name||"Torneo")+" · Ronda "+(ri+1),"(el primero lleva blancas)"],nT=0;
+  rd.games.forEach(function(g){if(g.tanda+1>nT)nT=g.tanda+1;});
+  var who=function(id){var nm=pname(id);return id+(nm?" "+nm:"");};
+  for(var t=0;t<nT;t++){
+    if(nT>1) out.push("","Tanda "+LETTERS[t]);
+    rd.games.filter(function(g){return g.tanda===t;}).sort(function(a,b){return a.mesa-b.mesa;}).forEach(function(g){
+      var r=g.res==="1-0"?"  1–0":g.res==="0-1"?"  0–1":g.res==="d"?"  ½–½":"";
+      out.push("Mesa "+g.mesa+": "+who(g.w)+" vs "+who(g.b)+r);
+    });
+  }
+  rd.games.forEach(function(g){if(g.b==null)out.push("","Descansa: "+who(g.w));});
+  return out.join("\n");
+}
+function playersText(){
+  var out=[(state.name||"Torneo")+" · Jugadores ("+activeCount()+" juegan)",""];
+  state.players.forEach(function(p){out.push("No. "+p.id+" · "+(p.name||"(sin nombre)")+(p.active?"":" (no juega)"));});
+  return out.join("\n");
+}
+function standingsText(){
+  var rows=standings(state),out=[(state.name||"Torneo")+" · Posiciones"+(finished(state)?" finales":" tras "+state.rondas.length+" rondas"),""];
+  rows.forEach(function(r){out.push(r.place+(r.tie?"=":"")+". No. "+r.id+(r.name?" "+r.name:"")+" · "+fmtPts(r.pts)+" pts · Bch "+fmtPts(r.buch)+" · Bch-1 "+fmtPts(r.cut1)+" · Gan "+r.win);});
+  return out.join("\n");
+}
+function copyText(txt){
+  var fail=function(){showText(txt,"");};
+  try{navigator.clipboard.writeText(txt).then(function(){toast("Copiado. Pégalo donde lo necesites.");},fail);}catch(e){fail();}
+}
+function act(a,d){
+  switch(a){
+    case "tab": ui.tab=d.t; ui.confirm=null; ui.copy=null; ui.unlock=false; ui.restore=null; render(); window.scrollTo(0,0); break;
+    case "round": ui.round=+d.i; ui.unlock=false; ui.confirm=null; render(); break;
+    case "step": setNum(d.k,(d.k==="players"?state.players.length:state[d.k])+(+d.d)); break;
+    case "start":
+      if(activeCount()<2) return;
+      mutate(function(s){s.rondas=[{games:pairRound(s)}];s.playoff=null;}); ui.round=null; tReset(); render(); window.scrollTo(0,0); break;
+    case "res":
+      var ri=+d.ri,gi=+d.gi;
+      if(ri!==state.rondas.length-1&&!ui.unlock) return;
+      mutate(function(s){var g=s.rondas[ri]&&s.rondas[ri].games[gi]; if(!g||g.b==null) return; g.res=g.res===d.r?null:d.r; s.playoff=null;});
+      break;
+    case "next":
+      var cur=state.rondas[state.rondas.length-1];
+      if(!cur||!roundDone(cur)||state.rondas.length>=state.rounds) return;
+      mutate(function(s){s.rondas.push({games:pairRound(s)});}); ui.round=null; ui.unlock=false; tReset(); render(); window.scrollTo(0,0);
+      toast("Ronda "+state.rondas.length+" emparejada"); break;
+    case "manual": ui.tab="aj"; ui.manual=true; ui.confirm=null; ui.copy=null; render(); var mm=document.getElementById("manual"); if(mm&&mm.scrollIntoView) mm.scrollIntoView(); break;
+    case "unlock": ui.unlock=true; render(); break;
+    case "ask": ui.confirm=d.c; render(); break;
+    case "cancel": ui.confirm=null; ui.restore=null; render(); break;
+    case "backup": saveFile("torneo-respaldo_"+stamp()+".json",backupText(),"application/json"); break;
+    case "csv": saveFile("torneo-posiciones_"+stamp()+".csv",csvText(),"text/csv"); break;
+    case "restore":
+      if(!ui.restore) return;
+      var data=ui.restore; ui.restore=null; ui.confirm=null; ui.round=null;
+      mutate(function(s){Object.keys(s).forEach(function(k){delete s[k];}); Object.keys(data).forEach(function(k){s[k]=data[k];});});
+      tReset(); render(); toast("Respaldo restaurado"); break;
+    case "sortear":
+      if(state.rondas.length) return;
+      var names=sorteoNames();
+      if(names.length<2){ui.confirm=null;render();toast("Pega al menos dos nombres, uno por renglón.");return;}
+      shuffle(names);
+      mutate(function(s){s.players=names.map(function(nm,i){return {id:i+1,name:nm,active:true};});});
+      ui.confirm=null; ui.sorteoText=""; ui.sorteo=false; render();
+      toast("Números sorteados para "+names.length+" alumnos. Revisa la lista."); break;
+    case "undo": ui.confirm=null; ui.round=null; mutate(function(s){s.rondas.pop();s.playoff=null;}); break;
+    case "reset": ui.confirm=null; ui.round=null; mutate(function(s){s.rondas=[];s.playoff=null;}); ui.tab="ronda"; tReset(); render(); break;
+    case "addp": mutate(function(s){s.players.push({id:s.players.length+1,name:"",active:true});}); break;
+    case "po": mutate(function(s){s.playoff={a:+d.a,b:+d.b,winner:+d.w};}); break;
+    case "po-clear": mutate(function(s){s.playoff=null;}); break;
+    case "copy-r":
+      if(!state.rondas.length) return;
+      var last=state.rondas.length-1; copyText(roundText(ui.round==null?last:Math.min(ui.round,last))); break;
+    case "copy-s": copyText(standingsText()); break;
+    case "copy-p": copyText(playersText()); break;
+    case "close-copy": ui.copy=null; render(); break;
+    case "t-start":
+      try{var AC=window.AudioContext||window.webkitAudioContext; if(AC&&!T.ac) T.ac=new AC(); if(T.ac&&T.ac.state==="suspended") T.ac.resume();}catch(e){}
+      if(T.left<=0) T.left=state.minutes*60000;
+      T.end=Date.now()+T.left; T.run=true; render(); break;
+    case "t-pause": T.left=tLeft(); T.run=false; render(); break;
+    case "t-reset": tReset(); render(); break;
+  }
+}
+document.addEventListener("click",function(e){
+  var b=e.target.closest?e.target.closest("[data-act]"):null;
+  if(!b||b.disabled) return;
+  act(b.dataset.act,b.dataset);
+});
+document.addEventListener("input",function(e){
+  var t=e.target;
+  if(t.classList&&t.classList.contains("pname")){
+    var id=+t.dataset.id;
+    mutate(function(s){s.players.forEach(function(p){if(p.id===id)p.name=t.value;});},true);
+  }else if(t.id==="in-sorteo"){
+    ui.sorteoText=t.value;
+  }else if(t.id==="in-name"){
+    mutate(function(s){s.name=t.value;},true);
+    document.getElementById("t-name").textContent=t.value||"Torneo de Ajedrez Escolar";
+  }
+});
+document.addEventListener("change",function(e){
+  var t=e.target;
+  if(t.classList&&t.classList.contains("pact")){
+    var id=+t.dataset.id;
+    mutate(function(s){s.players.forEach(function(p){if(p.id===id)p.active=t.checked;});});
+  }else if(t.dataset&&t.dataset.k&&t.type==="number"){
+    setNum(t.dataset.k,parseInt(t.value,10));
+  }else if(t.id==="in-restore"&&t.files&&t.files[0]){
+    var fr=new FileReader();
+    fr.onload=function(){
+      try{ui.restore=parseBackup(String(fr.result));ui.confirm="restore";render();}
+      catch(e){ui.restore=null;ui.confirm=null;render();toast("Ese archivo no es un respaldo válido del torneo.");}
+    };
+    fr.onerror=function(){toast("No se pudo leer el archivo.");};
+    fr.readAsText(t.files[0]);
+  }
+});
+document.addEventListener("toggle",function(e){if(!e.target)return; if(e.target.id==="manual") ui.manual=e.target.open; else if(e.target.id==="sorteo") ui.sorteo=e.target.open;},true);
+document.addEventListener("focusout",function(){
+  if(pendingRender) setTimeout(function(){if(pendingRender) deferRender();},0);
+});
+
+render();
+initCloud();
+})();
+</script>
+
+<div class="upd" id="upd" role="status" hidden><span>Hay una versión nueva de la app.</span><button type="button" id="b-upd">Actualizar</button></div>
+<script>
+(function(){
+  if(!("serviceWorker" in navigator)||location.protocol.indexOf("http")!==0) return;
+  var bar=document.getElementById("upd"),btn=document.getElementById("b-upd"),waiting=null,reloading=false;
+  function offer(w){waiting=w;bar.hidden=false;}
+  btn.addEventListener("click",function(){if(waiting){waiting.postMessage("activar");btn.disabled=true;}});
+  navigator.serviceWorker.addEventListener("controllerchange",function(){if(reloading)return;reloading=true;location.reload();});
+  window.addEventListener("load",function(){
+    navigator.serviceWorker.register("./sw.js").then(function(reg){
+      if(reg.waiting&&navigator.serviceWorker.controller) offer(reg.waiting);
+      reg.addEventListener("updatefound",function(){
+        var w=reg.installing; if(!w) return;
+        w.addEventListener("statechange",function(){if(w.state==="installed"&&navigator.serviceWorker.controller) offer(w);});
+      });
+      setInterval(function(){reg.update().catch(function(){});},60*60*1000);
+    }).catch(function(){});
+  });
+})();
+</script>
+</body>
+</html>

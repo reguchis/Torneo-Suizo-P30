@@ -1,6 +1,6 @@
 # Torneo Suizo Escolar
 
-**30 Santo Domingo · versión 1.2**
+**30 Santo Domingo · versión 1.2.1**
 
 Aplicación para organizar torneos de ajedrez escolar con sistema suizo: registro por número, sorteo automático, emparejamientos sin repetir rival, tandas según los tableros disponibles, captura de resultados, reloj de tanda y tabla de posiciones con desempates. Funciona con o sin internet.
 

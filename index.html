@@ -209,7 +209,7 @@ textarea{width:100%;min-height:160px;border:1px solid var(--line);border-radius:
   <header class="top">
     <div class="brand">
       <span class="glyph" aria-hidden="true"></span>
-      <div><h1 id="t-name">Torneo de Ajedrez Escolar</h1><p class="status" id="t-status"></p><p class="appline">Torneo Suizo Escolar · 30 Santo Domingo · versión 1.2.3</p></div>
+      <div><h1 id="t-name">Torneo de Ajedrez Escolar</h1><p class="status" id="t-status"></p><p class="appline">Torneo Suizo Escolar · 30 Santo Domingo · versión 1.2.4</p></div>
     </div>
     <div class="topright"><span class="cloud" id="cloud">En este dispositivo</span><button type="button" class="btn exit" id="b-exit" data-act="exit-ask">Salir</button></div>
   </header>
@@ -409,7 +409,8 @@ var LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function loadLocal(){try{var s=localStorage.getItem(LS_KEY);var d=s?JSON.parse(s):null;return d&&Array.isArray(d.players)&&Array.isArray(d.rondas)?d:null;}catch(e){return null;}}
 function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
 var state=loadLocal()||blank(2);
-var VERSION="1.2.3";
+var VERSION="1.2.4";
+var IS_PWA=!!document.querySelector('link[rel="manifest"]')&&location.protocol.indexOf("http")===0&&("serviceWorker" in navigator);
 var ui={proj:false,projView:"pairs",about:false,tab:"ronda",round:null,unlock:false,confirm:null,copy:null,copyMsg:"",manual:false,sorteo:false,sorteoText:"",restore:null};
 var readOnly=false,docRef=null,writing=false,dirty=false,saveTimer=null,firstSnap=true,pendingRender=false;
 
@@ -664,6 +665,26 @@ function closeProj(){
 }
 document.addEventListener("keydown",function(e){if(ui.proj&&e.key==="Escape"&&!document.fullscreenElement) closeProj();});
 
+/* ---------- Buscar actualización (solo app instalable de GitHub) ---------- */
+function checkUpdate(){
+  var btn=document.getElementById("b-upd-check");
+  var done=function(msg){if(btn){btn.disabled=false;btn.textContent="Buscar actualización";} if(msg) toast(msg);};
+  var offline=function(){done("Sin conexión. Conéctate a internet para buscar actualizaciones.");};
+  if(!IS_PWA) return;
+  if(navigator.onLine===false) return offline();
+  if(btn){btn.disabled=true;btn.textContent="Buscando…";}
+  navigator.serviceWorker.getRegistration().then(function(reg){
+    if(!reg) return done("No se pudo buscar la actualización. Cierra y vuelve a abrir la app.");
+    reg.update().then(function(){
+      setTimeout(function(){
+        if(reg.waiting){ if(window.__ofrecerActualizacion) window.__ofrecerActualizacion(reg.waiting); done("Hay una versión nueva. Toca “Actualizar”."); }
+        else if(reg.installing){ done("Descargando la versión nueva…"); }
+        else done("Tienes la versión más reciente ("+VERSION+").");
+      },1200);
+    },offline);
+  },offline);
+}
+
 /* ---------- Vistas ---------- */
 function stepper(key,label,val,min,max,off){
   return '<div class="field"><label for="in-'+key+'">'+label+'</label><div class="stepper">'+
@@ -890,6 +911,7 @@ function manualHtml(){
     '<li><b>Consigues más tableros:</b> cambia el número en Ajustes. Con tableros suficientes para todas las partidas se juega en una sola tanda.</li>'+
     '<li><b>Quieres repetir el torneo con el mismo grupo:</b> “Reiniciar torneo”, al final de esta pantalla, borra rondas y resultados y conserva nombres y ajustes.</li>'+
     '<li><b>Quieres un torneo nuevo con otro grupo:</b> “Nuevo torneo desde cero” borra todo y regresa a 2 jugadores, 1 tablero, 1 ronda y 15 minutos. Guarda un respaldo antes si quieres conservar el anterior.</li>'+
+    (IS_PWA?'<li><b>Quieres saber si hay versión nueva:</b> en Ajustes › Acerca de toca “Buscar actualización”. Si la hay, toca “Actualizar”; el torneo guardado no se pierde.</li>':'')+
     '<li><b>Cambias de equipo o temes perder el torneo:</b> en Ajustes › Respaldo toca “Guardar respaldo” y, en el otro equipo, “Restaurar respaldo”.</li></ul>'+
     '<p><b>Sin internet.</b> Todo se guarda en este navegador. No borres sus datos ni uses ventana de incógnito durante el torneo, y lleva todo el torneo en un solo equipo. Mientras hay una ronda en curso, la app pide mantener la pantalla encendida, si el navegador lo permite. Instalada desde su enlace, abre sin internet desde el ícono.</p></details>';
 }
@@ -937,6 +959,7 @@ function viewAj(){
 function aboutHtml(){
   return '<details id="acerca"'+(ui.about?" open":"")+'><summary>Acerca de</summary><div class="about">'+
     '<div class="apptitle"><b>Torneo Suizo Escolar</b><span>30 Santo Domingo · versión '+VERSION+'</span></div>'+
+    (IS_PWA?'<button type="button" class="btn" id="b-upd-check" data-act="upd-check">Buscar actualización</button>':'')+
     '<div><h4>Creada por</h4><p><b>Christian Reyes Guzmán</b><br>Docente del Plantel 30 Santo Domingo<br>Colegio de Bachilleres de Chiapas</p></div>'+
     '<p class="motto">Hecha por un docente para docentes: organiza un torneo de ajedrez con emparejamientos automáticos en minutos, con o sin internet.</p>'+
     '<div><h4>Desarrollo</h4><p>Diseño, pruebas en el aula y criterio docente: Christian Reyes Guzmán.<br>Programación asistida por inteligencia artificial (Claude, de Anthropic).</p></div>'+
@@ -1033,6 +1056,7 @@ function act(a,d){
     case "proj-full":
       try{var pe=document.getElementById("proj"); if(document.fullscreenElement){document.exitFullscreen();}else if(pe.requestFullscreen){pe.requestFullscreen().catch(function(){toast("Este navegador no permite pantalla completa aquí.");});}else toast("Este navegador no permite pantalla completa aquí.");}catch(e){}
       break;
+    case "upd-check": checkUpdate(); break;
     case "exit-ask": exitBox("ask"); break;
     case "exit-no": exitBox(null); break;
     case "exit-go": exitApp(); break;
@@ -1136,6 +1160,7 @@ initCloud();
   if(!("serviceWorker" in navigator)||location.protocol.indexOf("http")!==0) return;
   var bar=document.getElementById("upd"),btn=document.getElementById("b-upd"),waiting=null,reloading=false;
   function offer(w){waiting=w;bar.hidden=false;}
+  window.__ofrecerActualizacion=offer;
   btn.addEventListener("click",function(){if(waiting){waiting.postMessage("activar");btn.disabled=true;}});
   navigator.serviceWorker.addEventListener("controllerchange",function(){if(reloading)return;reloading=true;location.reload();});
   window.addEventListener("load",function(){

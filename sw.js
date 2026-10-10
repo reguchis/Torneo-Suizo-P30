@@ -1,7 +1,7 @@
-/* Torneo Suizo Escolar · versión 1.2.2 · Service Worker
+/* Torneo Suizo Escolar · versión 1.2.3 · Service Worker
    Guarda la app en el dispositivo para abrirla sin internet.
    Al publicar una versión nueva, cambia el número de VERSION. */
-var VERSION="1.2.2";
+var VERSION="1.2.3";
 var CACHE="torneo-suizo-p30-"+VERSION;
 var ARCHIVOS=["./","./index.html","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png","./icons/icon-maskable-512.png","./icons/apple-touch-icon.png","./icons/favicon-32.png"];
 

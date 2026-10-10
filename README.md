@@ -1,8 +1,8 @@
 # Torneo Suizo Escolar
 
-**30 Santo Domingo · versión 1.2.2**
+**30 Santo Domingo · versión 1.2.3**
 
-Aplicación para organizar torneos de ajedrez escolar con sistema suizo: registro por número, sorteo automático, emparejamientos sin repetir rival, tandas según los tableros disponibles, captura de resultados, reloj de tanda y tabla de posiciones con desempates. Funciona con o sin internet.
+Aplicación para organizar torneos de ajedrez escolar con sistema suizo: registro por número, sorteo automático, emparejamientos sin repetir rival, tandas según los tableros disponibles, captura de resultados, reloj de tanda con avisos, modo proyector y tabla de posiciones con desempates. Funciona con o sin internet.
 
 ## Creada por
 
@@ -11,6 +11,11 @@ Docente del Plantel 30 Santo Domingo
 Colegio de Bachilleres de Chiapas
 
 *Hecha por un docente para docentes: organiza un torneo de ajedrez con emparejamientos automáticos en minutos, con o sin internet.*
+
+## Desarrollo
+
+Diseño, pruebas en el aula y criterio docente: Christian Reyes Guzmán.
+Programación asistida por inteligencia artificial (Claude, de Anthropic).
 
 ## Tecnología
 

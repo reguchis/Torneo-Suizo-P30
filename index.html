@@ -154,7 +154,7 @@ summary{font-weight:600;cursor:pointer}
 details ol,details ul{margin:10px 0 0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px;max-width:62ch}
 details p{margin-top:12px;max-width:62ch}
 label.btn{display:inline-flex;align-items:center}
-.about{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.about{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:14px 0 6px}
 .about .apptitle{display:flex;flex-direction:column;align-items:center;gap:2px}
 .about .apptitle b{font-family:var(--display);font-size:1.3rem;line-height:1.15}
 .about .apptitle span{color:var(--muted);font-size:.9rem}
@@ -162,6 +162,33 @@ label.btn{display:inline-flex;align-items:center}
 .about p{max-width:52ch;margin-inline:auto}
 .about .tech{display:flex;flex-direction:column;align-items:center;gap:4px}
 .motto{font-style:italic}
+.warn{color:var(--danger);font-size:.875rem;font-weight:600;max-width:62ch}
+/* modo proyector */
+.proj{position:fixed;inset:0;z-index:30;background:var(--bg);color:var(--ink);overflow:auto;
+  padding:calc(16px + env(safe-area-inset-top,0px)) 24px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:18px;font-size:clamp(16px,1.7vw,30px)}
+.pj-top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.pj-title b{display:block;font-family:var(--display);font-size:1.5em;line-height:1.1}
+.pj-title span{color:var(--muted)}
+.pj-clock{font-family:var(--display);font-weight:700;font-size:2.6em;font-variant-numeric:tabular-nums;line-height:1}
+.pj-clock.zero{color:var(--danger)}
+.pj-bar{display:flex;gap:8px;flex-wrap:wrap;font-size:16px}
+.pj-bar .chip{font-size:15px}
+.pj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,22em),1fr));gap:10px 24px}
+.pj-row{display:grid;grid-template-columns:4.2em minmax(0,1fr) auto minmax(0,1fr) 3.2em;align-items:center;gap:.5em;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.45em .7em}
+.pj-m{color:var(--muted);font-size:.8em;text-transform:uppercase;letter-spacing:.05em}
+.pj-m b{color:var(--ink);font-family:var(--display);font-size:1.4em;letter-spacing:0}
+.pj-p{display:flex;align-items:center;gap:.4em;min-width:0}
+.pj-p b{font-family:var(--display);font-variant-numeric:tabular-nums;min-width:1.8em;text-align:center;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.pj-p span{min-width:0;overflow-wrap:break-word;line-height:1.15}
+.pj-p .pc{width:.75em;height:.75em}
+.pj-vs{color:var(--muted);font-size:.8em}
+.pj-r{font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.pj-h{font-size:.75em;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.pj-pos{display:grid;grid-template-columns:2.4em 2.4em minmax(0,1fr) auto;gap:.5em;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:.35em .7em}
+.pj-pos .pl{font-family:var(--display);font-weight:700}
+.pj-pos .pt{font-family:var(--display);font-weight:700;font-variant-numeric:tabular-nums}
+.pj-pos.top{background:var(--felt-soft)}
+@media (max-width:640px){.pj-row{grid-template-columns:3.4em minmax(0,1fr) 3em}.pj-vs{display:none}.pj-row .pj-p+.pj-vs+.pj-p{grid-column:2}}
 .upd{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:10;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
   background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 12px 10px 16px;max-width:728px;margin:0 auto}
 .upd span{flex:1;min-width:12ch}
@@ -182,7 +209,7 @@ textarea{width:100%;min-height:160px;border:1px solid var(--line);border-radius:
   <header class="top">
     <div class="brand">
       <span class="glyph" aria-hidden="true"></span>
-      <div><h1 id="t-name">Torneo de Ajedrez Escolar</h1><p class="status" id="t-status"></p><p class="appline">Torneo Suizo Escolar · 30 Santo Domingo · versión 1.2.2</p></div>
+      <div><h1 id="t-name">Torneo de Ajedrez Escolar</h1><p class="status" id="t-status"></p><p class="appline">Torneo Suizo Escolar · 30 Santo Domingo · versión 1.2.3</p></div>
     </div>
     <div class="topright"><span class="cloud" id="cloud">En este dispositivo</span><button type="button" class="btn exit" id="b-exit" data-act="exit-ask">Salir</button></div>
   </header>
@@ -195,6 +222,7 @@ textarea{width:100%;min-height:160px;border:1px solid var(--line);border-radius:
   </nav>
   <main id="view"></main>
 </div>
+<div class="proj" id="proj" role="dialog" aria-label="Modo proyector" hidden></div>
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
@@ -381,8 +409,8 @@ var LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function loadLocal(){try{var s=localStorage.getItem(LS_KEY);var d=s?JSON.parse(s):null;return d&&Array.isArray(d.players)&&Array.isArray(d.rondas)?d:null;}catch(e){return null;}}
 function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
 var state=loadLocal()||blank(2);
-var VERSION="1.2.2";
-var ui={tab:"ronda",round:null,unlock:false,confirm:null,copy:null,copyMsg:"",manual:false,sorteo:false,sorteoText:"",restore:null};
+var VERSION="1.2.3";
+var ui={proj:false,projView:"pairs",about:false,tab:"ronda",round:null,unlock:false,confirm:null,copy:null,copyMsg:"",manual:false,sorteo:false,sorteoText:"",restore:null};
 var readOnly=false,docRef=null,writing=false,dirty=false,saveTimer=null,firstSnap=true,pendingRender=false;
 
 function setCloud(mode){
@@ -458,8 +486,11 @@ function toast(msg){
 var dis=function(){return readOnly?" disabled":"";};
 
 /* ---------- Reloj de tanda ---------- */
-var T={left:0,end:0,run:false,ac:null};
-function tReset(){T.run=false;T.left=state.minutes*60000;}
+var T={left:0,end:0,run:false,ac:null,warned:false};
+var CLOCK_KEY="torneo-suizo-reloj";
+function tSave(){try{localStorage.setItem(CLOCK_KEY,JSON.stringify({run:T.run,end:T.end,left:T.left}));}catch(e){}}
+function tLoad(){try{var c=JSON.parse(localStorage.getItem(CLOCK_KEY)||"null");if(!c)return false;T.run=!!c.run;T.end=+c.end||0;T.left=+c.left||0;if(T.run&&T.end<=Date.now()){T.run=false;T.left=0;}T.warned=tLeft()<=60000;return true;}catch(e){return false;}}
+function tReset(){T.run=false;T.left=state.minutes*60000;T.warned=false;tSave();}
 function tLeft(){return T.run?Math.max(0,T.end-Date.now()):T.left;}
 function fmtClock(ms){var s=Math.ceil(ms/1000),m=Math.floor(s/60);s=s%60;return (m<10?"0":"")+m+":"+(s<10?"0":"")+s;}
 function beep(){
@@ -474,11 +505,22 @@ function beep(){
     });
   }catch(e){}
 }
-tReset();
+function beep1(){
+  try{
+    if(!T.ac) return;
+    var o=T.ac.createOscillator(),g=T.ac.createGain();
+    o.frequency.value=660; o.connect(g); g.connect(T.ac.destination);
+    g.gain.setValueAtTime(0.22,T.ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,T.ac.currentTime+0.35);
+    o.start(); o.stop(T.ac.currentTime+0.4);
+  }catch(e){}
+}
+if(!tLoad()) tReset();
 setInterval(function(){
-  var el=document.getElementById("clock"); if(!el) return;
-  var l=tLeft(); el.textContent=fmtClock(l);
-  if(T.run&&l<=0){T.run=false;T.left=0;beep();toast("Se acabó el tiempo de la tanda");render();}
+  var l=tLeft(),el=document.getElementById("clock"),pc=document.getElementById("pclock");
+  if(el) el.textContent=fmtClock(l);
+  if(pc){pc.textContent=fmtClock(l);pc.classList.toggle("zero",l<=0);}
+  if(T.run&&!T.warned&&l<=60000&&l>0){T.warned=true;if(state.minutes>1){beep1();toast("Queda 1 minuto");}}
+  if(T.run&&l<=0){T.run=false;T.left=0;tSave();beep();toast("Se acabó el tiempo de la tanda");render();}
 },250);
 
 /* ---------- Pantalla encendida durante la ronda ---------- */
@@ -576,6 +618,52 @@ function exitApp(){
   setTimeout(function(){exitBox("info");},400);
 }
 
+/* ---------- Modo proyector ---------- */
+function projHtml(){
+  var n=state.rondas.length,top='';
+  var bar='<div class="pj-bar" role="group" aria-label="Vista del proyector">'+
+    '<button type="button" class="chip" id="pj-pairs" data-act="proj-view" data-v="pairs" aria-pressed="'+(ui.projView==="pairs")+'">Emparejamientos</button>'+
+    '<button type="button" class="chip" id="pj-pos" data-act="proj-view" data-v="pos" aria-pressed="'+(ui.projView==="pos")+'">Posiciones</button>'+
+    '<button type="button" class="chip" id="pj-full" data-act="proj-full">Pantalla completa</button>'+
+    '<button type="button" class="chip" id="pj-close" data-act="proj-close">Cerrar ✕</button></div>';
+  if(!n) return '<div class="pj-top"><div class="pj-title"><b>'+esc(state.name||"Torneo")+'</b><span>El torneo aún no inicia</span></div>'+bar+'</div>';
+  var last=n-1,rd=state.rondas[last],done=roundDone(rd),fin=finished(state);
+  var showClock=ui.projView==="pairs"&&!done;
+  top='<div class="pj-top"><div class="pj-title"><b>'+esc(state.name||"Torneo")+'</b><span>'+(fin?"Torneo terminado":"Ronda "+n+" de "+state.rounds)+'</span></div>'+
+    (showClock?'<div class="pj-clock'+(tLeft()<=0?" zero":"")+'" id="pclock">'+fmtClock(tLeft())+'</div>':'')+bar+'</div>';
+  var who=function(id,col){var nm=pname(id);return '<span class="pj-p"><i class="pc '+col+'"></i><b>'+id+'</b><span>'+(nm?esc(nm):"")+'</span></span>';};
+  var body='';
+  if(ui.projView==="pairs"){
+    var nT=0; rd.games.forEach(function(g){if(g.tanda+1>nT)nT=g.tanda+1;});
+    for(var t=0;t<nT;t++){
+      var list=rd.games.filter(function(g){return g.tanda===t;}).sort(function(a,b){return a.mesa-b.mesa;});
+      if(nT>1) body+='<p class="pj-h">Tanda '+LETTERS[t]+(t>0?' · entran conforme se desocupen tableros':'')+'</p>';
+      body+='<div class="pj-grid">'+list.map(function(g){
+        var r=g.res==="1-0"?"1–0":g.res==="0-1"?"0–1":g.res==="d"?"½–½":"";
+        return '<div class="pj-row"><span class="pj-m">Mesa <b>'+g.mesa+'</b></span>'+who(g.w,"w")+'<span class="pj-vs">vs</span>'+who(g.b,"b")+'<span class="pj-r">'+r+'</span></div>';
+      }).join("")+'</div>';
+    }
+    rd.games.forEach(function(g){if(g.b==null){var nm=pname(g.w);body+='<p class="pj-h">Descansa: '+g.w+(nm?" · "+esc(nm):"")+'</p>';}});
+  }else{
+    var rows=standings(state);
+    body='<p class="pj-h">Posiciones '+(fin?"finales":"tras "+n+(n===1?" ronda":" rondas"))+'</p><div class="pj-grid">'+rows.filter(function(r){return r.active||r.played>0;}).map(function(r,i){
+      return '<div class="pj-pos'+(i===0&&fin?" top":"")+'"><span class="pl">'+r.place+(r.tie?"=":"")+'</span><span>'+r.id+'</span><span>'+(r.name?esc(r.name):"—")+'</span><span class="pt">'+fmtPts(r.pts)+'</span></div>';
+    }).join("")+'</div>';
+  }
+  return top+body;
+}
+function renderProj(){
+  var el=document.getElementById("proj"); if(!el) return;
+  if(!ui.proj){el.hidden=true;el.innerHTML="";document.body.style.overflow="";return;}
+  el.innerHTML=projHtml(); el.hidden=false; document.body.style.overflow="hidden";
+}
+function closeProj(){
+  ui.proj=false;
+  try{if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen();}catch(e){}
+  render();
+}
+document.addEventListener("keydown",function(e){if(ui.proj&&e.key==="Escape"&&!document.fullscreenElement) closeProj();});
+
 /* ---------- Vistas ---------- */
 function stepper(key,label,val,min,max,off){
   return '<div class="field"><label for="in-'+key+'">'+label+'</label><div class="stepper">'+
@@ -597,8 +685,14 @@ function summaryLine(){
   var n=activeCount(),g=Math.floor(n/2),t=tandasPerRound();
   var txt=g+(g===1?" partida":" partidas")+" por ronda en "+(t===1?"una sola tanda":t+" tandas")+
     (n%2?"; un jugador descansa cada ronda":"")+". Duración estimada: "+fmtDur(estimate())+".";
-  if(t===1&&state.boards>g) txt+=" Te sobran "+(state.boards-g)+" tableros.";
-  return '<p class="note">'+txt+'</p>';
+  if(t===1&&state.boards>g){var sob=state.boards-g;txt+=" Te sobra"+(sob===1?" 1 tablero.":"n "+sob+" tableros.");}
+  var h='<p class="note">'+txt+'</p>';
+  if(n>=2){
+    var maxR=n%2?n:n-1, rec=Math.min(maxR,Math.max(1,Math.ceil(Math.log(n)/Math.log(2))));
+    h+='<p class="note">Recomendado para '+n+' jugadores: '+rec+(rec===1?' ronda':' rondas')+', para que quede un solo campeón.</p>';
+    if(state.rounds>maxR) h+='<p class="warn">Con '+n+' jugadores caben como máximo '+maxR+(maxR===1?' ronda':' rondas')+' sin repetir rival. Baja las rondas o algunos jugarán dos veces contra el mismo rival.</p>';
+  }
+  return h;
 }
 function sideHtml(id,color,cls){
   var nm=pname(id);
@@ -685,7 +779,7 @@ function viewRonda(){
       h+='<button type="button" class="btn primary wide" id="b-next" data-act="next"'+(all&&!readOnly?"":" disabled")+'>Emparejar ronda '+(state.rondas.length+1)+'</button>';
       if(!all) h+='<p class="note">Faltan '+(real.length-doneN)+' resultados para emparejar la siguiente ronda.</p>';
     }
-    h+='<div class="row"><button type="button" class="btn" id="b-copyr" data-act="copy-r">Copiar emparejamientos</button>';
+    h+='<div class="row"><button type="button" class="btn" id="b-copyr" data-act="copy-r">Copiar emparejamientos</button><button type="button" class="btn" id="b-proj" data-act="proj-open" data-v="pairs">Modo proyector</button>';
     if(!readOnly) h+='<button type="button" class="btn danger" id="b-askundo" data-act="ask" data-c="undo">Deshacer esta ronda</button>';
     h+='</div>';
     if(ui.confirm==="undo"){
@@ -694,7 +788,7 @@ function viewRonda(){
     }
     h+='</div>';
   }else{
-    h+='<div class="row"><button type="button" class="btn" id="b-copyr" data-act="copy-r">Copiar emparejamientos</button></div>';
+    h+='<div class="row"><button type="button" class="btn" id="b-copyr" data-act="copy-r">Copiar emparejamientos</button><button type="button" class="btn" id="b-proj" data-act="proj-open" data-v="pairs">Modo proyector</button></div>';
   }
   h+=copyBox();
   return h;
@@ -739,7 +833,8 @@ function viewPos(){
   h+='<p class="note">Desempates, en orden: partida entre ellos; Bch (Buchholz, suma de puntos de los rivales); Bch-1 (Buchholz sin el rival más débil); Gan (partidas ganadas). D es descanso.'+
      (anyTie?' El signo = marca un empate sin resolver: se decide con una partida rápida a 5 min.':'')+'</p>';
   h+='<div class="row"><button type="button" class="btn" id="b-copys" data-act="copy-s">Copiar posiciones</button>'+
-     '<button type="button" class="btn" id="b-csv" data-act="csv">Exportar a Excel (CSV)</button></div>'+copyBox();
+     '<button type="button" class="btn" id="b-csv" data-act="csv">Exportar a Excel (CSV)</button>'+
+     (n?'<button type="button" class="btn" id="b-projpos" data-act="proj-open" data-v="pos">Modo proyector</button>':'')+'</div>'+copyBox();
   return h;
 }
 function viewJug(){
@@ -773,14 +868,17 @@ function viewJug(){
 }
 function manualHtml(){
   return '<details id="manual"'+(ui.manual?" open":"")+'><summary>Manual rápido</summary><ol>'+
-    '<li><b>Configura.</b> La app empieza en 2 jugadores, 1 tablero, 1 ronda y 15 minutos por tanda. En la pestaña Ronda ajusta esos valores a tu torneo; abajo aparece la vista previa de la ronda 1.</li>'+
+    '<li><b>Configura.</b> La app empieza en 2 jugadores, 1 tablero, 1 ronda y 15 minutos por tanda. En la pestaña Ronda ajusta esos valores a tu torneo; la app te dice cuántas rondas recomienda y te avisa si pusiste más de las que caben sin repetir rival. Abajo aparece la vista previa de la ronda 1.</li>'+
     '<li><b>Sortea los números.</b> Cada alumno saca su número, o pega la lista en Jugadores › Sorteo automático y la app los reparte al azar. Los nombres se pueden escribir antes o después de empezar.</li>'+
     '<li><b>Marca ausentes.</b> En Jugadores desmarca “Juega” a quien no llegó, antes de iniciar.</li>'+
     '<li><b>Inicia el torneo.</b> Toca “Iniciar torneo” y sienta a los alumnos según su mesa. El primero de cada mesa lleva blancas.</li>'+
-    '<li><b>Arranca el reloj.</b> Toca “Iniciar” en el reloj de tanda cuando todos empiecen. El tiempo es por partida, no por jugador; al sonar, las partidas abiertas se definen por material.</li>'+
+    '<li><b>Arranca el reloj.</b> Toca “Iniciar” en el reloj de tanda cuando todos empiecen. El tiempo es por partida, no por jugador. Suena un aviso cuando falta 1 minuto y otro al terminar; las partidas abiertas se definen por material.</li>'+
     '<li><b>Captura resultados.</b> En cada mesa toca 1–0 (ganan blancas), ½–½ (tablas) o 0–1 (ganan negras). Para corregir, toca otra opción.</li>'+
     '<li><b>Empareja la siguiente ronda.</b> Con todos los resultados capturados se activa “Emparejar ronda 2”. Repite los pasos 5 a 7 hasta la última ronda.</li>'+
     '<li><b>Premia.</b> En Posiciones aparecen el campeón y los lugares. Si hay empate en primer lugar, la app pide el resultado de la final de desempate.</li></ol>'+
+    '<p><b>Modo proyector</b></p><ul>'+
+    '<li>En Ronda o en Posiciones toca “Modo proyector” para ver en grande los emparejamientos, el reloj o la tabla, ideal para el cañón o una TV. Ciérralo con “Cerrar ✕” o la tecla Esc.</li>'+
+    '<li>Con la laptop conectada al cañón en modo extendido, abre la app en dos ventanas del mismo navegador: una en el cañón con el modo proyector y otra para capturar. La proyectada se actualiza sola, reloj incluido.</li></ul>'+
     '<p><b>Conteo de material al terminar el tiempo</b></p><ul>'+
     '<li>Se cuentan solo las piezas que siguen dentro del tablero: dama 9, torre 5, alfil 3, caballo 3, peón 1. El rey no cuenta.</li>'+
     '<li>Un peón coronado vale como la pieza en que se convirtió.</li>'+
@@ -837,17 +935,18 @@ function viewAj(){
   return h;
 }
 function aboutHtml(){
-  return '<section class="about" id="acerca" aria-label="Acerca de"><h3>Acerca de</h3>'+
+  return '<details id="acerca"'+(ui.about?" open":"")+'><summary>Acerca de</summary><div class="about">'+
     '<div class="apptitle"><b>Torneo Suizo Escolar</b><span>30 Santo Domingo · versión '+VERSION+'</span></div>'+
     '<div><h4>Creada por</h4><p><b>Christian Reyes Guzmán</b><br>Docente del Plantel 30 Santo Domingo<br>Colegio de Bachilleres de Chiapas</p></div>'+
     '<p class="motto">Hecha por un docente para docentes: organiza un torneo de ajedrez con emparejamientos automáticos en minutos, con o sin internet.</p>'+
+    '<div><h4>Desarrollo</h4><p>Diseño, pruebas en el aula y criterio docente: Christian Reyes Guzmán.<br>Programación asistida por inteligencia artificial (Claude, de Anthropic).</p></div>'+
     '<div><h4>Tecnología</h4><div class="tech">'+
     '<span>Aplicación web progresiva (PWA)</span>'+
     '<span>Lenguajes: HTML5, CSS3 y JavaScript</span>'+
     '<span>Datos: localStorage en el dispositivo</span>'+
     '<span>Archivos: JSON (respaldos) y CSV (resultados)</span>'+
     '<span>Emparejamiento: sistema suizo con desempates Buchholz, programado sin librerías externas</span>'+
-    '</div></div></section>';
+    '</div></div></div></details>';
 }
 function render(){
   pendingRender=false;
@@ -859,6 +958,7 @@ function render(){
   ["ronda","pos","jug","aj"].forEach(function(t){document.getElementById("tab-"+t).setAttribute("aria-selected",String(ui.tab===t));});
   var v=document.getElementById("view");
   v.innerHTML=ui.tab==="ronda"?viewRonda():ui.tab==="pos"?viewPos():ui.tab==="jug"?viewJug():viewAj();
+  renderProj();
   if(keep){var el=document.getElementById(keep); if(el&&el!==document.activeElement){try{el.focus({preventScroll:true});}catch(e){}}}
   syncWake();
 }
@@ -927,6 +1027,12 @@ function act(a,d){
       if(!cur||!roundDone(cur)||state.rondas.length>=state.rounds) return;
       mutate(function(s){s.rondas.push({games:pairRound(s)});}); ui.round=null; ui.unlock=false; tReset(); render(); window.scrollTo(0,0);
       toast("Ronda "+state.rondas.length+" emparejada"); break;
+    case "proj-open": ui.proj=true; ui.projView=d.v||"pairs"; render(); break;
+    case "proj-view": ui.projView=d.v; render(); break;
+    case "proj-close": closeProj(); break;
+    case "proj-full":
+      try{var pe=document.getElementById("proj"); if(document.fullscreenElement){document.exitFullscreen();}else if(pe.requestFullscreen){pe.requestFullscreen().catch(function(){toast("Este navegador no permite pantalla completa aquí.");});}else toast("Este navegador no permite pantalla completa aquí.");}catch(e){}
+      break;
     case "exit-ask": exitBox("ask"); break;
     case "exit-no": exitBox(null); break;
     case "exit-go": exitApp(); break;
@@ -966,9 +1072,10 @@ function act(a,d){
     case "close-copy": ui.copy=null; render(); break;
     case "t-start":
       try{var AC=window.AudioContext||window.webkitAudioContext; if(AC&&!T.ac) T.ac=new AC(); if(T.ac&&T.ac.state==="suspended") T.ac.resume();}catch(e){}
-      if(T.left<=0) T.left=state.minutes*60000;
-      T.end=Date.now()+T.left; T.run=true; render(); break;
-    case "t-pause": T.left=tLeft(); T.run=false; render(); break;
+      if(T.left<=0){T.left=state.minutes*60000;T.warned=false;}
+      if(T.left>60000) T.warned=false;
+      T.end=Date.now()+T.left; T.run=true; tSave(); render(); break;
+    case "t-pause": T.left=tLeft(); T.run=false; tSave(); render(); break;
     case "t-reset": tReset(); render(); break;
   }
 }
@@ -1006,10 +1113,18 @@ document.addEventListener("change",function(e){
     fr.readAsText(t.files[0]);
   }
 });
-document.addEventListener("toggle",function(e){if(!e.target)return; if(e.target.id==="manual") ui.manual=e.target.open; else if(e.target.id==="sorteo") ui.sorteo=e.target.open;},true);
+document.addEventListener("toggle",function(e){if(!e.target)return; if(e.target.id==="manual") ui.manual=e.target.open; else if(e.target.id==="sorteo") ui.sorteo=e.target.open; else if(e.target.id==="acerca") ui.about=e.target.open;},true);
 document.addEventListener("focusout",function(){
   if(pendingRender) setTimeout(function(){if(pendingRender) deferRender();},0);
 });
+
+window.addEventListener("storage",function(e){
+  if(e.key===LS_KEY&&e.newValue){
+    try{var d=JSON.parse(e.newValue); if(d&&Array.isArray(d.players)&&Array.isArray(d.rondas)&&(d.updatedAt||0)>(state.updatedAt||0)){state=d;deferRender();}}catch(x){}
+  }else if(e.key===CLOCK_KEY){tLoad();render();}
+});
+/* D: dentro del visor de Claude la página no puede cerrarse sola; ahí se oculta "Salir" */
+try{if(window.top!==window.self){var bx=document.getElementById("b-exit"); if(bx) bx.hidden=true;}}catch(e){var bx2=document.getElementById("b-exit"); if(bx2) bx2.hidden=true;}
 
 render();
 initCloud();

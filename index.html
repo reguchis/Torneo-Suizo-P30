@@ -43,8 +43,12 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16p
 button,input,textarea{font:inherit;color:inherit}
 .app{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:14px 56px;display:flex;flex-direction:column;gap:14px}
 
-.top{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.top{display:grid;grid-template-columns:38px minmax(0,1fr) 38px;align-items:start;gap:10px}
+.hbtn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center;padding:0;cursor:pointer;font-weight:700;font-size:18px;line-height:1}
+.hbtn svg{width:18px;height:18px}
+.hbtn:focus-visible{outline:3px solid var(--felt);outline-offset:2px}
+.cloudrow{margin:6px 0 0}
+.brand{display:flex;align-items:flex-start;gap:10px;min-width:0}
 .glyph{flex:none;width:30px;height:30px;border-radius:5px;border:1px solid var(--line);
   background:conic-gradient(var(--felt) 25%,var(--buff) 0 50%,var(--felt) 0 75%,var(--buff) 0)}
 .brand div{min-width:0}
@@ -53,8 +57,6 @@ h1{font-family:var(--display);font-weight:700;font-size:1.3rem;line-height:1.15;
 .cloud{font-size:.75rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px;white-space:nowrap}
 .cloud.sync{color:var(--felt);border-color:var(--felt)}
 /* encabezado: estado y salir */
-.topright{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.btn.exit{min-height:40px;padding:0 14px}
 .exitbox{background:var(--buff);color:var(--on-buff);border-radius:12px;padding:12px 16px;display:flex;flex-direction:column;gap:10px}
 .appline{margin:2px 0 0;color:var(--muted);font-size:.75rem;letter-spacing:.02em}
 
@@ -84,6 +86,11 @@ p{margin:0}
 .btn.primary{background:var(--felt);border-color:var(--felt);color:var(--on-felt);font-size:1.02rem;min-height:50px}
 .btn.wide{width:100%}
 .btn.danger{color:var(--danger);border-color:var(--danger)}
+.btn.dangerfill{background:var(--danger);border-color:var(--danger);color:var(--surface)}
+.bdg{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.bdg .btn{width:100%}
+.bdg .note{margin:0 0 8px}
+.bdg label{font-size:.85rem;font-weight:600}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--felt);outline-offset:2px}
 
@@ -153,6 +160,15 @@ details{border:1px solid var(--line);border-radius:12px;padding:12px 16px;backgr
 summary{font-weight:600;cursor:pointer}
 details ol,details ul{margin:10px 0 0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px;max-width:62ch}
 details p{margin-top:12px;max-width:62ch}
+/* manual */
+.manhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.manidx{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.manidx ol{margin:8px 0 0;padding-left:1.4em;display:flex;flex-direction:column;gap:2px}
+.linkbtn{border:0;background:none;padding:6px 0;color:var(--felt);font-weight:600;text-align:left;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.msec{scroll-margin-top:72px}
+.msec summary{font-size:1.02rem}
+.msec[open] summary{color:var(--felt)}
+.mtop{margin-top:10px}
 label.btn{display:inline-flex;align-items:center}
 .about{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:14px 0 6px}
 .about .apptitle{display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -207,11 +223,12 @@ textarea{width:100%;min-height:160px;border:1px solid var(--line);border-radius:
 
 <div class="app">
   <header class="top">
+    <button type="button" class="hbtn" id="b-exit" data-act="exit-ask" aria-label="Salir de la app" title="Salir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg></button>
     <div class="brand">
       <span class="glyph" aria-hidden="true"></span>
-      <div><h1 id="t-name">Torneo de Ajedrez Escolar</h1><p class="status" id="t-status"></p><p class="appline">Torneo Suizo Escolar · 30 Santo Domingo · versión 1.2.4</p></div>
+      <div><h1 id="t-name">Torneo de Ajedrez Escolar</h1><p class="status" id="t-status"></p><p class="appline">Torneo Suizo Escolar · 30 Santo Domingo · versión 1.2.6</p><p class="cloudrow"><span class="cloud" id="cloud">En este dispositivo</span></p></div>
     </div>
-    <div class="topright"><span class="cloud" id="cloud">En este dispositivo</span><button type="button" class="btn exit" id="b-exit" data-act="exit-ask">Salir</button></div>
+    <button type="button" class="hbtn" id="b-help" data-act="help" aria-label="Ayuda: abre el manual en la sección de esta pantalla" title="Ayuda">?</button>
   </header>
   <div class="exitbox" id="exitbox" role="alertdialog" aria-live="polite" hidden></div>
   <nav class="tabs" role="tablist" aria-label="Secciones">
@@ -409,9 +426,10 @@ var LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function loadLocal(){try{var s=localStorage.getItem(LS_KEY);var d=s?JSON.parse(s):null;return d&&Array.isArray(d.players)&&Array.isArray(d.rondas)?d:null;}catch(e){return null;}}
 function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
 var state=loadLocal()||blank(2);
-var VERSION="1.2.4";
+var VERSION="1.2.6";
 var IS_PWA=!!document.querySelector('link[rel="manifest"]')&&location.protocol.indexOf("http")===0&&("serviceWorker" in navigator);
-var ui={proj:false,projView:"pairs",about:false,tab:"ronda",round:null,unlock:false,confirm:null,copy:null,copyMsg:"",manual:false,sorteo:false,sorteoText:"",restore:null};
+var FRAMED=false; try{FRAMED=window.top!==window.self;}catch(e){FRAMED=true;}
+var ui={bdc:false,askOk:false,manOpen:{},back:null,shrink:null,proj:false,projView:"pairs",about:false,tab:"ronda",round:null,unlock:false,confirm:null,copy:null,copyMsg:"",manual:false,sorteo:false,sorteoText:"",restore:null};
 var readOnly=false,docRef=null,writing=false,dirty=false,saveTimer=null,firstSnap=true,pendingRender=false;
 
 function setCloud(mode){
@@ -616,7 +634,7 @@ function exitApp(){
   saveLocal(); if(dirty) flush();
   try{if(WL){WL.release();WL=null;}}catch(e){}
   try{window.close();}catch(e){}
-  setTimeout(function(){exitBox("info");},400);
+  setTimeout(function(){exitBox("info");},1500);
 }
 
 /* ---------- Modo proyector ---------- */
@@ -663,7 +681,7 @@ function closeProj(){
   try{if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen();}catch(e){}
   render();
 }
-document.addEventListener("keydown",function(e){if(ui.proj&&e.key==="Escape"&&!document.fullscreenElement) closeProj();});
+document.addEventListener("keydown",function(e){if(ui.proj&&e.key==="Escape"&&!document.fullscreenElement) closeProj(); if(e.key==="Enter"&&e.target&&e.target.id==="askw"){e.preventDefault(); if(ui.askOk&&ui.confirm) act(ui.confirm,{});}});
 
 /* ---------- Buscar actualización (solo app instalable de GitHub) ---------- */
 function checkUpdate(){
@@ -700,7 +718,14 @@ function settingsBlock(){
     stepper("boards","Tableros",state.boards,1,100,false)+
     stepper("rounds","Rondas",state.rounds,Math.max(1,state.rondas.length),15,false)+
     stepper("minutes","Minutos por tanda",state.minutes,3,120,false)+
-    '</div>'+summaryLine();
+    '</div>'+shrinkBox()+summaryLine();
+}
+function shrinkBox(){
+  if(ui.confirm!=="shrink"||ui.shrink==null) return "";
+  var q=state.players.slice(ui.shrink).filter(function(p){return p.name;});
+  var lista=q.map(function(p){return p.id+" "+esc(p.name);}).join(", ");
+  return '<div class="banner buff"><p>Al bajar a '+ui.shrink+' jugadores se quita'+(q.length===1?' a ':'n a ')+lista+', con su nombre. ¿Continuar?</p>'+
+    '<div class="row"><button type="button" class="btn danger" id="b-shrink" data-act="shrink-yes">Sí, quitar</button><button type="button" class="btn" id="b-shrink-no" data-act="cancel">Cancelar</button></div></div>';
 }
 function summaryLine(){
   var n=activeCount(),g=Math.floor(n/2),t=tandasPerRound();
@@ -761,7 +786,7 @@ function viewRonda(){
       '<p class="lead">Indica cuántos jugadores y tableros tienes. El rol y las tandas se ajustan solos.</p>'+
       settingsBlock()+
       '<button type="button" class="btn primary wide" id="b-start" data-act="start"'+(activeCount()<2||readOnly?" disabled":"")+'>Iniciar torneo</button>'+
-      '<button type="button" class="btn wide" id="b-manual" data-act="manual">Ver manual rápido</button></section>';
+      '<button type="button" class="btn wide" id="b-manual" data-act="manual" data-s="1">Ver manual rápido</button></section>';
     h+='<div class="stack"><h2>Ronda 1 <small>vista previa</small></h2>'+
       '<p class="note">Cada alumno juega con el número que le tocó en el sorteo. El primero de cada mesa lleva blancas.</p>'+
       gamesHtml(prev,0,false,true)+'</div>';
@@ -779,6 +804,10 @@ function viewRonda(){
   }
   h+='<div class="row between"><h2>Ronda '+(ri+1)+' <small>de '+state.rounds+'</small></h2>'+
      '<span class="prog'+(all?" done":"")+'">'+(all?"Ronda completa":doneN+" de "+real.length+" resultados")+'</span></div>';
+  if(isCurrent&&all&&!finished(state)&&state.rondas.length<state.rounds&&!readOnly){
+    h+='<div class="banner"><b class="big">Ronda completa</b><p>Ya están los '+real.length+' resultados. Puedes emparejar la siguiente ronda.</p>'+
+       '<button type="button" class="btn primary" id="b-next-top" data-act="next">Emparejar ronda '+(state.rondas.length+1)+'</button></div>';
+  }
   if(isCurrent&&!all){
     var l=tLeft();
     h+='<div class="clockbar"><span class="clock'+(l<=0?" zero":"")+'" id="clock">'+fmtClock(l)+'</span><span class="lbl">Reloj de tanda</span>'+
@@ -795,7 +824,9 @@ function viewRonda(){
     h+='<div class="stack">';
     if(fin){
       h+='<div class="banner"><b class="big">Torneo terminado</b><p>Ya están todos los resultados de las '+state.rounds+' rondas.</p>'+
-         '<button type="button" class="btn primary" id="b-gopos" data-act="tab" data-t="pos">Ver posiciones finales</button></div>';
+         '<div class="row"><button type="button" class="btn primary" id="b-gopos" data-act="tab" data-t="pos">Ver posiciones finales</button>'+
+         '<button type="button" class="btn" id="b-bk-fin" data-act="backup">Guardar respaldo</button></div>'+
+         '<p class="note">Guarda un respaldo para conservar este torneo aunque se borren los datos del navegador.</p></div>';
     }else if(state.rondas.length<state.rounds){
       h+='<button type="button" class="btn primary wide" id="b-next" data-act="next"'+(all&&!readOnly?"":" disabled")+'>Emparejar ronda '+(state.rondas.length+1)+'</button>';
       if(!all) h+='<p class="note">Faltan '+(real.length-doneN)+' resultados para emparejar la siguiente ronda.</p>';
@@ -835,7 +866,8 @@ function viewPos(){
     h+='<div class="banner"><h3>Campeón</h3><b class="big">'+lab(rows[0])+'</b>'+
        '<p>'+(rows[0].po?"Ganó la final de desempate. ":"")+fmtPts(rows[0].pts)+' de '+n+' puntos.'+
        (rows[1]?' Segundo lugar: '+lab(rows[1])+'.':'')+(rows[2]?' Tercer lugar: '+lab(rows[2])+'.':'')+'</p>'+
-       (rows[0].po&&!readOnly?'<div class="row"><button type="button" class="btn" id="b-poclr" data-act="po-clear">Cambiar resultado de la final</button></div>':"")+'</div>';
+       '<div class="row"><button type="button" class="btn" id="b-bk-pos" data-act="backup">Guardar respaldo</button>'+
+       (rows[0].po&&!readOnly?'<button type="button" class="btn" id="b-poclr" data-act="po-clear">Cambiar resultado de la final</button>':"")+'</div></div>';
   }else{
     h+='<h2>Posiciones <small>tras '+n+(n===1?" ronda":" rondas")+'</small></h2>';
   }
@@ -887,39 +919,107 @@ function viewJug(){
   h+='<div class="row"><button type="button" class="btn" id="b-copyp" data-act="copy-p">Copiar jugadores</button></div>'+copyBox();
   return h;
 }
-function manualHtml(){
-  return '<details id="manual"'+(ui.manual?" open":"")+'><summary>Manual rápido</summary><ol>'+
-    '<li><b>Configura.</b> La app empieza en 2 jugadores, 1 tablero, 1 ronda y 15 minutos por tanda. En la pestaña Ronda ajusta esos valores a tu torneo; la app te dice cuántas rondas recomienda y te avisa si pusiste más de las que caben sin repetir rival. Abajo aparece la vista previa de la ronda 1.</li>'+
-    '<li><b>Sortea los números.</b> Cada alumno saca su número, o pega la lista en Jugadores › Sorteo automático y la app los reparte al azar. Los nombres se pueden escribir antes o después de empezar.</li>'+
-    '<li><b>Marca ausentes.</b> En Jugadores desmarca “Juega” a quien no llegó, antes de iniciar.</li>'+
-    '<li><b>Inicia el torneo.</b> Toca “Iniciar torneo” y sienta a los alumnos según su mesa. El primero de cada mesa lleva blancas.</li>'+
-    '<li><b>Arranca el reloj.</b> Toca “Iniciar” en el reloj de tanda cuando todos empiecen. El tiempo es por partida, no por jugador. Suena un aviso cuando falta 1 minuto y otro al terminar; las partidas abiertas se definen por material.</li>'+
-    '<li><b>Captura resultados.</b> En cada mesa toca 1–0 (ganan blancas), ½–½ (tablas) o 0–1 (ganan negras). Para corregir, toca otra opción.</li>'+
-    '<li><b>Empareja la siguiente ronda.</b> Con todos los resultados capturados se activa “Emparejar ronda 2”. Repite los pasos 5 a 7 hasta la última ronda.</li>'+
-    '<li><b>Premia.</b> En Posiciones aparecen el campeón y los lugares. Si hay empate en primer lugar, la app pide el resultado de la final de desempate.</li></ol>'+
-    '<p><b>Modo proyector</b></p><ul>'+
-    '<li>En Ronda o en Posiciones toca “Modo proyector” para ver en grande los emparejamientos, el reloj o la tabla, ideal para el cañón o una TV. Ciérralo con “Cerrar ✕” o la tecla Esc.</li>'+
-    '<li>Con la laptop conectada al cañón en modo extendido, abre la app en dos ventanas del mismo navegador: una en el cañón con el modo proyector y otra para capturar. La proyectada se actualiza sola, reloj incluido.</li></ul>'+
-    '<p><b>Conteo de material al terminar el tiempo</b></p><ul>'+
-    '<li>Se cuentan solo las piezas que siguen dentro del tablero: dama 9, torre 5, alfil 3, caballo 3, peón 1. El rey no cuenta.</li>'+
-    '<li>Un peón coronado vale como la pieza en que se convirtió.</li>'+
-    '<li>Con material igual son tablas. Si hay jaque mate, gana quien lo dio, sin contar piezas.</li></ul>'+
-    '<p><b>Si algo sale mal</b></p><ul>'+
-    '<li><b>Emparejaste antes de tiempo:</b> “Deshacer esta ronda” borra solo la ronda actual.</li>'+
-    '<li><b>Resultado mal capturado en una ronda anterior:</b> abre esa ronda con los botones R1, R2… y toca “Corregir resultados”.</li>'+
-    '<li><b>Alguien llega tarde o se retira:</b> agrégalo o desmárcalo en Jugadores. Aplica desde la siguiente ronda.</li>'+
-    '<li><b>Consigues más tableros:</b> cambia el número en Ajustes. Con tableros suficientes para todas las partidas se juega en una sola tanda.</li>'+
-    '<li><b>Quieres repetir el torneo con el mismo grupo:</b> “Reiniciar torneo”, al final de esta pantalla, borra rondas y resultados y conserva nombres y ajustes.</li>'+
-    '<li><b>Quieres un torneo nuevo con otro grupo:</b> “Nuevo torneo desde cero” borra todo y regresa a 2 jugadores, 1 tablero, 1 ronda y 15 minutos. Guarda un respaldo antes si quieres conservar el anterior.</li>'+
-    (IS_PWA?'<li><b>Quieres saber si hay versión nueva:</b> en Ajustes › Acerca de toca “Buscar actualización”. Si la hay, toca “Actualizar”; el torneo guardado no se pierde.</li>':'')+
-    '<li><b>Cambias de equipo o temes perder el torneo:</b> en Ajustes › Respaldo toca “Guardar respaldo” y, en el otro equipo, “Restaurar respaldo”.</li></ul>'+
-    '<p><b>Sin internet.</b> Todo se guarda en este navegador. No borres sus datos ni uses ventana de incógnito durante el torneo, y lleva todo el torneo en un solo equipo. Mientras hay una ronda en curso, la app pide mantener la pantalla encendida, si el navegador lo permite. Instalada desde su enlace, abre sin internet desde el ícono.</p></details>';
+function manSections(){
+  var upd=IS_PWA?'<li><b>Buscar actualización:</b> en Acerca de, debajo de la versión. Si hay una versión nueva, toca “Actualizar”; el torneo guardado no se pierde.</li>':'';
+  return [
+  ["Primeros pasos y botones ⏻ y ?",
+   '<ol>'+
+   '<li><b>Configura.</b> La app empieza en 2 jugadores, 1 tablero, 1 ronda y 15 minutos por tanda. En la pestaña Ronda ajusta esos valores a tu torneo; la app te dice cuántas rondas recomienda y te avisa si pusiste más de las que caben sin repetir rival. Abajo aparece la vista previa de la ronda 1.</li>'+
+   '<li><b>Sortea los números.</b> Cada alumno saca su número, o pega la lista en Jugadores › Sorteo automático y la app los reparte al azar. Los nombres se pueden escribir antes o después de empezar.</li>'+
+   '<li><b>Marca ausentes.</b> En Jugadores desmarca “Juega” a quien no llegó, antes de iniciar.</li>'+
+   '<li><b>Inicia el torneo.</b> Toca “Iniciar torneo” y sienta a los alumnos según su mesa. El primero de cada mesa lleva blancas.</li></ol>'+
+   '<p><b>Botones de arriba</b></p><ul>'+
+   '<li><b>⏻ Salir</b> (a la izquierda): pide confirmar y cierra la app. Tu torneo queda guardado. Si el teléfono no deja cerrarla, te dice cómo salir.</li>'+
+   '<li><b>? Ayuda</b> (a la derecha): abre este manual en la sección de la pantalla donde estás. “Volver” te regresa ahí.</li></ul>'],
+  ["Ronda",
+   '<ul>'+
+   '<li><b>Reloj de tanda.</b> Toca “Iniciar” cuando todos empiecen. El tiempo es por partida, no por jugador. Suena un aviso cuando falta 1 minuto y otro al terminar; las partidas abiertas se definen por material (sección 7).</li>'+
+   '<li><b>Tandas.</b> Si hay menos tableros que partidas, la ronda se divide en tandas. La tanda B entra conforme se desocupen tableros; quienes esperan en una ronda juegan primero en la siguiente.</li>'+
+   '<li><b>Captura resultados.</b> En cada mesa toca 1–0 (ganan blancas), ½–½ (tablas) o 0–1 (ganan negras). Para corregir, toca otra opción; si tocas la misma, se borra.</li>'+
+   '<li><b>Ronda completa.</b> Al capturar el último resultado, el reloj se detiene y arriba aparece “Ronda completa” con el botón para emparejar la siguiente ronda. El mismo botón está al final de la lista.</li>'+
+   '<li><b>Copiar emparejamientos.</b> Copia la ronda como texto para pegarla en WhatsApp o en un documento.</li>'+
+   '<li><b>Deshacer esta ronda.</b> Borra los emparejamientos y resultados de la ronda actual; las anteriores se conservan.</li>'+
+   '<li><b>Rondas anteriores.</b> Ábrelas con los botones R1, R2… Para cambiar un resultado toca “Corregir resultados”; los emparejamientos que ya se hicieron no cambian, solo los puntos.</li></ul>'],
+  ["Modo proyector",
+   '<ul>'+
+   '<li>En Ronda o en Posiciones toca “Modo proyector” para ver en grande los emparejamientos, el reloj o la tabla, ideal para el cañón o una TV. Ciérralo con “Cerrar ✕” o la tecla Esc.</li>'+
+   '<li>Con la laptop conectada al cañón en modo extendido, abre la app en dos ventanas del mismo navegador: una en el cañón con el modo proyector y otra para capturar. La proyectada se actualiza sola, reloj incluido.</li></ul>'],
+  ["Posiciones",
+   '<ul>'+
+   '<li><b>Tabla.</b> Lugar, número, alumno, resultado de cada ronda (1, ½, 0 o D de descanso), puntos y desempates.</li>'+
+   '<li><b>Desempates, en orden:</b> partida entre ellos; Bch (Buchholz, suma de puntos de los rivales); Bch-1 (Buchholz sin el rival más débil); Gan (partidas ganadas). El signo = marca un empate sin resolver: se decide con una partida rápida a 5 min.</li>'+
+   '<li><b>Premia.</b> Al terminar aparecen el campeón y los lugares. Si dos empatan en primer lugar, la app pide el resultado de la final de desempate.</li>'+
+   '<li><b>Guardar respaldo.</b> Al terminar el torneo, el aviso trae el botón “Guardar respaldo” para conservarlo (sección 9).</li>'+
+   '<li><b>Copiar posiciones</b> y <b>Exportar a Excel (CSV)</b> para compartir o llevar la tabla a tu Excel.</li></ul>'],
+  ["Jugadores",
+   '<ul>'+
+   '<li><b>Número y nombre.</b> El número es el del sorteo; escribe el nombre cuando sepas a quién le tocó.</li>'+
+   '<li><b>Juega.</b> Desmárcalo si alguien falta o se retira; deja de entrar al emparejamiento desde la siguiente ronda.</li>'+
+   '<li><b>Agregar jugador.</b> Quien se agrega con el torneo empezado entra con 0 puntos desde la siguiente ronda.</li>'+
+   '<li><b>Sorteo automático</b> (antes de iniciar). Pega la lista de alumnos, uno por renglón, y toca “Sortear números”. Si ya había nombres, pide confirmar.</li>'+
+   '<li><b>Copiar jugadores.</b> Copia la lista con números y nombres.</li>'+
+   '<li><b>Bajar la cantidad de jugadores.</b> Si alguno de los que se quitan ya tiene nombre, la app pide confirmar.</li></ul>'],
+  ["Ajustes",
+   '<ul>'+
+   '<li><b>Nombre del torneo</b>, jugadores, tableros, rondas y minutos por tanda. Un cambio de tableros reacomoda la ronda actual solo si aún no tiene resultados.</li>'+
+   '<li><b>Manual.</b> “Abrir manual” muestra esta guía.</li>'+
+   '<li><b>Cómo empareja la app.</b> Explica las reglas del sistema suizo que usa.</li>'+
+   '<li><b>Respaldo.</b> “Guardar respaldo” descarga un archivo con todo el torneo; “Restaurar respaldo” lo carga (sección 9).</li>'+
+   '<li><b>Borrar datos</b> (tarjeta plegada), de menor a mayor alcance: <b>Reiniciar torneo</b> borra rondas y resultados y conserva nombres y ajustes, para repetir con el mismo grupo; <b>Nuevo torneo desde cero</b> (en rojo) borra todo y regresa a 2 jugadores, 1 tablero, 1 ronda y 15 minutos. Cada uno pide escribir BORRAR; el botón Confirmar se activa al escribirlo y Enter también confirma.</li>'+
+   '<li><b>Acerca de.</b> Versión, créditos y tecnología.</li>'+upd+'</ul>'],
+  ["Conteo de material",
+   '<ul>'+
+   '<li>Al terminar el tiempo se cuentan solo las piezas que siguen dentro del tablero: dama 9, torre 5, alfil 3, caballo 3, peón 1. El rey no cuenta.</li>'+
+   '<li>Un peón coronado vale como la pieza en que se convirtió.</li>'+
+   '<li>Con material igual son tablas. Si hay jaque mate, gana quien lo dio, sin contar piezas.</li></ul>'],
+  ["Si algo sale mal",
+   '<ul>'+
+   '<li><b>Emparejaste antes de tiempo:</b> “Deshacer esta ronda” borra solo la ronda actual.</li>'+
+   '<li><b>Resultado mal capturado en una ronda anterior:</b> abre esa ronda con los botones R1, R2… y toca “Corregir resultados”.</li>'+
+   '<li><b>Alguien llega tarde o se retira:</b> agrégalo o desmárcalo en Jugadores. Aplica desde la siguiente ronda.</li>'+
+   '<li><b>Consigues más tableros:</b> cambia el número en Ajustes. Con tableros suficientes para todas las partidas se juega en una sola tanda.</li>'+
+   '<li><b>Quieres repetir el torneo con el mismo grupo:</b> Ajustes › Borrar datos › “Reiniciar torneo”.</li>'+
+   '<li><b>Quieres un torneo nuevo con otro grupo:</b> Ajustes › Borrar datos › “Nuevo torneo desde cero”. Guarda un respaldo antes si quieres conservar el anterior.</li>'+
+   '<li><b>La app aparece vacía:</b> ve la sección 9.</li></ul>'],
+  ["Cuidado de tus datos",
+   '<ul>'+
+   '<li><b>Dónde se guarda.</b> Todo el torneo se guarda solo en este navegador y en este equipo, al momento, sin que tengas que guardar a mano.</li>'+
+   '<li><b>Qué se pierde.</b> Si borras los datos del navegador (cookies y datos de sitios), desinstalas la app o usas una ventana de incógnito, se pierde el torneo completo: nombres, rondas y resultados.</li>'+
+   '<li><b>Qué sirve para recuperarlo.</b> Solo el archivo de respaldo (torneo-respaldo_….json). Guarda uno al terminar el torneo y, si quieres, después de cada ronda.</li>'+
+   '<li><b>Cada versión guarda su propio torneo.</b> La app instalada, el archivo HTML y el enlace de Claude no comparten datos; tampoco dos navegadores o dos equipos. Para pasar un torneo de uno a otro, usa el respaldo.</li></ul>'+
+   '<p><b>La app aparece vacía</b></p><ol>'+
+   '<li>Revisa que abriste la misma versión, en el mismo navegador y equipo donde capturaste.</li>'+
+   '<li>Si se borraron los datos, ve a Ajustes › Respaldo y toca “Restaurar respaldo”.</li>'+
+   '<li>Elige el archivo torneo-respaldo_….json más reciente y toca “Sí, restaurar”.</li></ol>'+
+   '<p>Mientras hay una ronda en curso, la app pide mantener la pantalla encendida, si el navegador lo permite. Instalada desde su enlace, abre sin internet desde el ícono.</p>']
+  ];
+}
+function viewMan(){
+  var secs=manSections();
+  var h='<div class="manhead"><button type="button" class="btn" id="b-manback" data-act="man-back">← Volver</button><h2>Manual</h2></div>'+
+    '<nav class="manidx" aria-label="Índice del manual"><h3>Índice</h3><ol>';
+  secs.forEach(function(x,i){h+='<li><button type="button" class="linkbtn" id="mi-'+(i+1)+'" data-act="man-go" data-s="'+(i+1)+'">'+esc(x[0])+'</button></li>';});
+  h+='</ol></nav>';
+  secs.forEach(function(x,i){
+    var id="m"+(i+1);
+    h+='<details class="msec" id="'+id+'"'+(ui.manOpen[id]?" open":"")+'><summary>'+(i+1)+'. '+esc(x[0])+'</summary>'+x[1]+
+       '<p class="mtop"><button type="button" class="linkbtn" data-act="man-top">↑ Índice</button></p></details>';
+  });
+  return h;
+}
+function openMan(sec){
+  if(ui.tab!=="man") ui.back={tab:ui.tab,round:ui.round,y:window.scrollY||0};
+  ui.tab="man"; ui.confirm=null; ui.copy=null; ui.manOpen={};
+  if(sec) ui.manOpen["m"+sec]=true;
+  render();
+  var el=sec?document.getElementById("m"+sec):null;
+  if(el&&el.scrollIntoView) el.scrollIntoView({block:"start"}); else window.scrollTo(0,0);
 }
 function viewAj(){
   var h='<h2>Ajustes</h2><div class="field"><label for="in-name">Nombre del torneo</label>'+
     '<input class="text" id="in-name" type="text" maxlength="80" value="'+esc(state.name)+'"'+dis()+'></div>'+settingsBlock();
   if(state.rondas.length>0) h+='<p class="note">Con el torneo empezado, los jugadores se agregan o retiran en la pestaña Jugadores. Un cambio de tableros reacomoda la ronda actual solo si aún no tiene resultados.</p>';
-  h+=manualHtml();
+  h+='<div class="stack"><h3>Manual</h3><p class="note">Instrucciones de cada pantalla, cuidado de tus datos y qué hacer si algo sale mal.</p><div class="row"><button type="button" class="btn" id="b-manual2" data-act="manual">Abrir manual</button></div></div>';
   h+='<details><summary>Cómo empareja la app</summary><ol>'+
     '<li>Ordena a los jugadores por puntos: victoria 1, tablas ½, derrota 0.</li>'+
     '<li>Empareja dentro del mismo grupo de puntos, mitad alta contra mitad baja. Si sobra uno, juega contra el mejor del grupo siguiente.</li>'+
@@ -937,21 +1037,23 @@ function viewAj(){
   }
   h+='</div>';
   if(!readOnly){
-    h+='<div class="stack"><h3>Empezar de nuevo</h3>';
-    if(ui.confirm==="reset"){
-      h+='<div class="banner buff"><p>Se borran todas las rondas y resultados. Los nombres y ajustes se conservan.</p>'+
-         '<div class="row"><button type="button" class="btn danger" id="b-reset" data-act="reset">Sí, reiniciar</button><button type="button" class="btn" id="b-cancel" data-act="cancel">Cancelar</button></div></div>';
-    }else{
-      h+='<div class="row"><button type="button" class="btn danger" id="b-askreset" data-act="ask" data-c="reset">Reiniciar torneo</button></div>';
+    h+='<details id="bdc"'+(ui.bdc?" open":"")+'><summary>Borrar datos</summary><div class="bdg">'+
+      '<p class="note">De menor a mayor alcance. Cada opción pide escribir BORRAR para confirmar.</p>'+
+      '<button type="button" class="btn danger" id="b-askreset" data-act="askb" data-c="reset">Reiniciar torneo</button>'+
+      '<p class="note">Borra rondas y resultados. Conserva nombres y ajustes, para repetir con el mismo grupo.</p>'+
+      '<button type="button" class="btn dangerfill" id="b-askfresh" data-act="askb" data-c="fresh">Nuevo torneo desde cero</button>'+
+      '<p class="note">Borra todo: nombres, rondas, resultados y ajustes. Vuelve a 2 jugadores, 1 tablero, 1 ronda y 15 minutos.</p>';
+    if(ui.confirm==="reset"||ui.confirm==="fresh"){
+      var txt=ui.confirm==="reset"
+        ?'<b>Reiniciar torneo.</b> Se borran todas las rondas y resultados. Los nombres y ajustes se conservan.'
+        :'<b>Nuevo torneo desde cero.</b> Se borra todo: nombres, rondas, resultados y ajustes. La app vuelve a 2 jugadores, 1 tablero, 1 ronda y 15 minutos. Si quieres conservar este torneo, primero toca “Guardar respaldo”.';
+      h+='<div class="banner buff" id="askbox"><p>'+txt+'</p>'+
+        '<label for="askw">Para confirmar, escribe BORRAR</label>'+
+        '<input class="text" id="askw" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false">'+
+        '<div class="row"><button type="button" class="btn dangerfill" id="b-borrar-si" data-act="'+ui.confirm+'" disabled>Confirmar</button>'+
+        '<button type="button" class="btn" id="b-borrar-no" data-act="cancel">Cancelar</button></div></div>';
     }
-    if(ui.confirm==="fresh"){
-      h+='<div class="banner buff"><p>Se borra todo: nombres, rondas, resultados y ajustes. La app vuelve a 2 jugadores, 1 tablero, 1 ronda y 15 minutos. Si quieres conservar este torneo, primero toca “Guardar respaldo”.</p>'+
-         '<div class="row"><button type="button" class="btn danger" id="b-fresh" data-act="fresh">Sí, empezar desde cero</button><button type="button" class="btn" id="b-cancel2" data-act="cancel">Cancelar</button></div></div>';
-    }else{
-      h+='<div class="row"><button type="button" class="btn danger" id="b-askfresh" data-act="ask" data-c="fresh">Nuevo torneo desde cero</button></div>';
-    }
-    h+='<p class="note">“Reiniciar torneo” conserva nombres y ajustes para repetir con el mismo grupo. “Nuevo torneo desde cero” borra todo.</p>';
-    h+='</div>';
+    h+='</div></details>';
   }
   h+=aboutHtml();
   return h;
@@ -979,19 +1081,26 @@ function render(){
   document.getElementById("t-status").textContent=(n?(finished(state)?"Terminado":"Ronda "+n+" de "+state.rounds):"Sin iniciar")+
     " · "+activeCount()+" jugadores · "+state.boards+(state.boards===1?" tablero":" tableros");
   ["ronda","pos","jug","aj"].forEach(function(t){document.getElementById("tab-"+t).setAttribute("aria-selected",String(ui.tab===t));});
+  var bx=document.getElementById("b-exit"),bh=document.getElementById("b-help");
+  if(bx) bx.style.visibility=(FRAMED||ui.tab==="man")?"hidden":"visible";
+  if(bh) bh.style.visibility=ui.tab==="man"?"hidden":"visible";
   var v=document.getElementById("view");
-  v.innerHTML=ui.tab==="ronda"?viewRonda():ui.tab==="pos"?viewPos():ui.tab==="jug"?viewJug():viewAj();
+  v.innerHTML=ui.tab==="man"?viewMan():ui.tab==="ronda"?viewRonda():ui.tab==="pos"?viewPos():ui.tab==="jug"?viewJug():viewAj();
   renderProj();
   if(keep){var el=document.getElementById(keep); if(el&&el!==document.activeElement){try{el.focus({preventScroll:true});}catch(e){}}}
   syncWake();
 }
 
 /* ---------- Acciones ---------- */
-function setNum(k,v){
+function setNum(k,v,force){
   var lim={players:[2,200],boards:[1,100],rounds:[Math.max(1,state.rondas.length),15],minutes:[3,120]}[k];
   if(!lim||isNaN(v)) return render();
   v=Math.max(lim[0],Math.min(lim[1],Math.round(v)));
   if(k==="players"&&state.rondas.length>0) return render();
+  if(k==="players"&&!force&&v<state.players.length){
+    var quitados=state.players.slice(v).filter(function(p){return p.name;});
+    if(quitados.length){ui.shrink=v;ui.confirm="shrink";return render();}
+  }
   mutate(function(s){
     if(k==="players"){
       while(s.players.length<v) s.players.push({id:s.players.length+1,name:"",active:true});
@@ -1043,7 +1152,13 @@ function act(a,d){
     case "res":
       var ri=+d.ri,gi=+d.gi;
       if(ri!==state.rondas.length-1&&!ui.unlock) return;
+      var wasDone=roundDone(state.rondas[state.rondas.length-1]);
       mutate(function(s){var g=s.rondas[ri]&&s.rondas[ri].games[gi]; if(!g||g.b==null) return; g.res=g.res===d.r?null:d.r; s.playoff=null;});
+      var lastR=state.rondas[state.rondas.length-1];
+      if(ri===state.rondas.length-1&&!wasDone&&roundDone(lastR)){
+        tReset(); render();
+        toast(finished(state)?"Torneo terminado. Revisa Posiciones.":"Ronda completa: ya puedes emparejar la ronda "+(state.rondas.length+1)+".");
+      }
       break;
     case "next":
       var cur=state.rondas[state.rondas.length-1];
@@ -1060,10 +1175,19 @@ function act(a,d){
     case "exit-ask": exitBox("ask"); break;
     case "exit-no": exitBox(null); break;
     case "exit-go": exitApp(); break;
-    case "manual": ui.tab="aj"; ui.manual=true; ui.confirm=null; ui.copy=null; render(); var mm=document.getElementById("manual"); if(mm&&mm.scrollIntoView) mm.scrollIntoView(); break;
+    case "manual": openMan(d.s?+d.s:0); break;
+    case "help":
+      var hs=ui.tab==="pos"?4:ui.tab==="jug"?5:ui.tab==="aj"?6:(state.rondas.length?2:1);
+      if(ui.tab!=="man") openMan(hs); break;
+    case "man-go": ui.manOpen["m"+d.s]=true; render(); var mg=document.getElementById("m"+d.s); if(mg&&mg.scrollIntoView) mg.scrollIntoView({block:"start"}); break;
+    case "man-top": window.scrollTo(0,0); break;
+    case "man-back":
+      var bk=ui.back||{tab:"ronda",round:null,y:0}; ui.back=null; ui.tab=bk.tab; ui.round=bk.round; render(); window.scrollTo(0,bk.y||0); break;
     case "unlock": ui.unlock=true; render(); break;
     case "ask": ui.confirm=d.c; render(); break;
-    case "cancel": ui.confirm=null; ui.restore=null; render(); break;
+    case "askb": ui.confirm=d.c; ui.askOk=false; ui.bdc=true; render(); var aw=document.getElementById("askw"); if(aw){try{aw.focus();}catch(x){} if(aw.scrollIntoView) aw.scrollIntoView({block:"center"});} break;
+    case "cancel": ui.askOk=false; ui.confirm=null; ui.restore=null; ui.shrink=null; render(); break;
+    case "shrink-yes": var to=ui.shrink; ui.confirm=null; ui.shrink=null; if(to!=null) setNum("players",to,true); else render(); break;
     case "backup": saveFile("torneo-respaldo_"+stamp()+".json",backupText(),"application/json"); break;
     case "csv": saveFile("torneo-posiciones_"+stamp()+".csv",csvText(),"text/csv"); break;
     case "restore":
@@ -1079,9 +1203,10 @@ function act(a,d){
       mutate(function(s){s.players=names.map(function(nm,i){return {id:i+1,name:nm,active:true};});});
       ui.confirm=null; ui.sorteoText=""; ui.sorteo=false; render();
       toast("Números sorteados para "+names.length+" alumnos. Revisa la lista."); break;
-    case "undo": ui.confirm=null; ui.round=null; mutate(function(s){s.rondas.pop();s.playoff=null;}); break;
-    case "reset": ui.confirm=null; ui.round=null; mutate(function(s){s.rondas=[];s.playoff=null;}); ui.tab="ronda"; tReset(); render(); break;
+    case "undo": ui.confirm=null; ui.round=null; mutate(function(s){s.rondas.pop();s.playoff=null;}); tReset(); render(); break;
+    case "reset": if(!ui.askOk) return; ui.askOk=false; ui.bdc=false; ui.confirm=null; ui.round=null; mutate(function(s){s.rondas=[];s.playoff=null;}); ui.tab="ronda"; tReset(); render(); break;
     case "fresh":
+      if(!ui.askOk) return; ui.askOk=false; ui.bdc=false;
       ui.confirm=null; ui.round=null; ui.unlock=false; ui.sorteoText="";
       mutate(function(s){var b=blank(2);Object.keys(s).forEach(function(k){delete s[k];});Object.keys(b).forEach(function(k){s[k]=b[k];});});
       ui.tab="ronda"; tReset(); render(); window.scrollTo(0,0); toast("Nuevo torneo listo: 2 jugadores, 1 tablero, 1 ronda"); break;
@@ -1113,6 +1238,9 @@ document.addEventListener("input",function(e){
   if(t.classList&&t.classList.contains("pname")){
     var id=+t.dataset.id;
     mutate(function(s){s.players.forEach(function(p){if(p.id===id)p.name=t.value;});},true);
+  }else if(t.id==="askw"){
+    ui.askOk=t.value.replace(/\s+/g,"").toUpperCase()==="BORRAR";
+    var bs=document.getElementById("b-borrar-si"); if(bs) bs.disabled=!ui.askOk;
   }else if(t.id==="in-sorteo"){
     ui.sorteoText=t.value;
   }else if(t.id==="in-name"){
@@ -1137,7 +1265,7 @@ document.addEventListener("change",function(e){
     fr.readAsText(t.files[0]);
   }
 });
-document.addEventListener("toggle",function(e){if(!e.target)return; if(e.target.id==="manual") ui.manual=e.target.open; else if(e.target.id==="sorteo") ui.sorteo=e.target.open; else if(e.target.id==="acerca") ui.about=e.target.open;},true);
+document.addEventListener("toggle",function(e){if(!e.target)return; if(e.target.classList&&e.target.classList.contains("msec")) ui.manOpen[e.target.id]=e.target.open; else if(e.target.id==="manual") ui.manual=e.target.open; else if(e.target.id==="sorteo") ui.sorteo=e.target.open; else if(e.target.id==="acerca") ui.about=e.target.open; else if(e.target.id==="bdc") ui.bdc=e.target.open;},true);
 document.addEventListener("focusout",function(){
   if(pendingRender) setTimeout(function(){if(pendingRender) deferRender();},0);
 });
@@ -1147,8 +1275,6 @@ window.addEventListener("storage",function(e){
     try{var d=JSON.parse(e.newValue); if(d&&Array.isArray(d.players)&&Array.isArray(d.rondas)&&(d.updatedAt||0)>(state.updatedAt||0)){state=d;deferRender();}}catch(x){}
   }else if(e.key===CLOCK_KEY){tLoad();render();}
 });
-/* D: dentro del visor de Claude la página no puede cerrarse sola; ahí se oculta "Salir" */
-try{if(window.top!==window.self){var bx=document.getElementById("b-exit"); if(bx) bx.hidden=true;}}catch(e){var bx2=document.getElementById("b-exit"); if(bx2) bx2.hidden=true;}
 
 render();
 initCloud();

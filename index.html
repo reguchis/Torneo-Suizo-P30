@@ -88,6 +88,7 @@ p{margin:0}
 .btn.danger{color:var(--danger);border-color:var(--danger)}
 .btn.dangerfill{background:var(--danger);border-color:var(--danger);color:var(--surface)}
 .wf{width:100%}
+.nw{white-space:nowrap}
 .row>.btn{flex:1 1 auto}
 .undo-row{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)}
 .ajg{display:flex;flex-direction:column;gap:10px}
@@ -189,7 +190,7 @@ label.btn{display:inline-flex;align-items:center}
 .warn{color:var(--danger);font-size:.875rem;font-weight:600;max-width:62ch}
 /* modo proyector */
 .proj{position:fixed;inset:0;z-index:30;background:var(--bg);color:var(--ink);overflow:auto;
-  padding:calc(16px + env(safe-area-inset-top,0px)) 24px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:18px;font-size:clamp(16px,1.7vw,30px)}
+  padding:calc(16px + env(safe-area-inset-top,0px)) 24px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:18px;font-size:clamp(16px,1.55vw,30px)}
 .pj-top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .pj-title b{display:block;font-family:var(--display);font-size:1.5em;line-height:1.1}
 .pj-title span{color:var(--muted)}
@@ -197,13 +198,13 @@ label.btn{display:inline-flex;align-items:center}
 .pj-clock.zero{color:var(--danger)}
 .pj-bar{display:flex;gap:8px;flex-wrap:wrap;font-size:16px}
 .pj-bar .chip{font-size:15px}
-.pj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,22em),1fr));gap:10px 24px}
-.pj-row{display:grid;grid-template-columns:4.2em minmax(0,1fr) auto minmax(0,1fr) 3.2em;align-items:center;gap:.5em;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.45em .7em}
+.pj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,27em),1fr));gap:10px 24px}
+.pj-row{display:grid;grid-template-columns:4.2em minmax(min-content,1fr) auto minmax(min-content,1fr) 3.2em;align-items:center;gap:.5em;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.45em .7em}
 .pj-m{color:var(--muted);font-size:.8em;text-transform:uppercase;letter-spacing:.05em}
 .pj-m b{color:var(--ink);font-family:var(--display);font-size:1.4em;letter-spacing:0}
 .pj-p{display:flex;align-items:center;gap:.4em;min-width:0}
 .pj-p b{font-family:var(--display);font-variant-numeric:tabular-nums;min-width:1.8em;text-align:center;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
-.pj-p span{min-width:0;overflow-wrap:break-word;line-height:1.15}
+.pj-p span{line-height:1.15;overflow-wrap:normal;word-break:normal;hyphens:none}
 .pj-p .pc{width:.75em;height:.75em}
 .pj-vs{color:var(--muted);font-size:.8em}
 .pj-r{font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
@@ -212,7 +213,7 @@ label.btn{display:inline-flex;align-items:center}
 .pj-pos .pl{font-family:var(--display);font-weight:700}
 .pj-pos .pt{font-family:var(--display);font-weight:700;font-variant-numeric:tabular-nums}
 .pj-pos.top{background:var(--felt-soft)}
-@media (max-width:640px){.pj-row{grid-template-columns:3.4em minmax(0,1fr) 3em}.pj-vs{display:none}.pj-row .pj-p+.pj-vs+.pj-p{grid-column:2}}
+@media (max-width:640px){.pj-m b{display:block}.pj-row{grid-template-columns:3.4em minmax(min-content,1fr) 3em}.pj-vs{display:none}.pj-row .pj-p+.pj-vs+.pj-p{grid-column:2}}
 .upd{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:10;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
   background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 12px 10px 16px;max-width:728px;margin:0 auto}
 .upd span{flex:1;min-width:12ch}
@@ -236,7 +237,7 @@ textarea{width:100%;min-height:160px;border:1px solid var(--line);border-radius:
     <button type="button" class="hbtn" id="b-exit" data-act="exit-ask" aria-label="Salir de la app" title="Salir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg></button>
     <div class="brand">
       <span class="glyph" aria-hidden="true"></span>
-      <div><h1 id="t-name">Torneo de Ajedrez Escolar</h1><p class="status" id="t-status"></p><p class="appline">Torneo Suizo Escolar · 30 Santo Domingo · versión 1.2.7</p><p class="cloudrow"><span class="cloud" id="cloud">En este dispositivo</span></p></div>
+      <div><h1 id="t-name">Torneo de Ajedrez Escolar</h1><p class="status" id="t-status"></p><p class="appline">Torneo Suizo Escolar · 30 Santo Domingo · versión 1.2.8</p><p class="cloudrow"><span class="cloud" id="cloud">En este dispositivo</span></p></div>
     </div>
     <button type="button" class="hbtn" id="b-help" data-act="help" aria-label="Ayuda: abre el manual en la sección de esta pantalla" title="Ayuda">?</button>
   </header>
@@ -436,7 +437,7 @@ var LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function loadLocal(){try{var s=localStorage.getItem(LS_KEY);var d=s?JSON.parse(s):null;return d&&Array.isArray(d.players)&&Array.isArray(d.rondas)?d:null;}catch(e){return null;}}
 function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
 var state=loadLocal()||blank(2);
-var VERSION="1.2.7";
+var VERSION="1.2.8";
 var IS_PWA=!!document.querySelector('link[rel="manifest"]')&&location.protocol.indexOf("http")===0&&("serviceWorker" in navigator);
 var FRAMED=false; try{FRAMED=window.top!==window.self;}catch(e){FRAMED=true;}
 var ui={cards:{},bdc:false,askOk:false,manOpen:{},back:null,shrink:null,proj:false,projView:"pairs",about:false,tab:"ronda",round:null,unlock:false,confirm:null,copy:null,copyMsg:"",manual:false,sorteo:false,sorteoText:"",restore:null};
@@ -881,6 +882,7 @@ function copyBox(){
     '<textarea id="copybox" readonly>'+esc(ui.copy)+'</textarea>'+
     '<div class="row"><button type="button" class="btn" id="b-closecopy" data-act="close-copy">Cerrar</button></div></div>';
 }
+function dot(t){return /[.!?…]$/.test(t)?t:t+'.';}
 function viewPos(){
   var rows=standings(state),n=state.rondas.length,h="",fin=finished(state);
   var nf=needFinal(state,rows),lab=function(r){return r.id+(r.name?" · "+esc(r.name):"");};
@@ -894,14 +896,14 @@ function viewPos(){
        '<button type="button" class="btn" id="b-po2" data-act="po" data-a="'+A.id+'" data-b="'+B.id+'" data-w="'+B.id+'">Ganó '+B.id+'</button></div>')+'</div>';
   }else if(fin){
     h+='<div class="banner"><h3>Campeón</h3><b class="big">'+lab(rows[0])+'</b>'+
-       '<p>'+(rows[0].po?"Ganó la final de desempate. ":"")+fmtPts(rows[0].pts)+' de '+n+' puntos.'+
-       (rows[1]?' Segundo lugar: '+lab(rows[1])+'.':'')+(rows[2]?' Tercer lugar: '+lab(rows[2])+'.':'')+'</p>'+
+       '<p>'+(rows[0].po?"Ganó la final de desempate. ":"")+'Puntos: '+fmtPts(rows[0].pts)+' de '+n+'.'+
+       (rows[1]?' Segundo lugar: '+dot(lab(rows[1])):'')+(rows[2]?' Tercer lugar: '+dot(lab(rows[2])):'')+'</p>'+
        '<div class="row"><button type="button" class="btn" id="b-bk-pos" data-act="backup">Guardar respaldo</button>'+
        (rows[0].po&&!readOnly?'<button type="button" class="btn" id="b-poclr" data-act="po-clear">Cambiar resultado de la final</button>':"")+'</div></div>';
   }else{
     h+='<h2>Posiciones <small>tras '+n+(n===1?" ronda":" rondas")+'</small></h2>';
   }
-  h+='<div class="tablewrap"><table><thead><tr><th>Lugar</th><th>No.</th><th style="text-align:left">Alumno</th>';
+  h+='<p class="note" id="tblhint" hidden>Desliza la tabla → para ver todas las columnas.</p><div class="tablewrap"><table><thead><tr><th>Lugar</th><th>No.</th><th style="text-align:left">Alumno</th>';
   for(var i=0;i<Math.max(n,1);i++) h+='<th>R'+(i+1)+'</th>';
   h+='<th>Pts</th><th title="Buchholz">Bch</th><th title="Buchholz sin el rival más débil">Bch-1</th><th title="Partidas ganadas">Gan</th></tr></thead><tbody>';
   var anyTie=false;
@@ -965,7 +967,7 @@ function manSections(){
    '<ul>'+
    '<li><b>Reloj de tanda.</b> Toca “Iniciar” cuando todos empiecen. El tiempo es por partida, no por jugador. Suena un aviso cuando falta 1 minuto y otro al terminar; las partidas abiertas se definen por material (sección 7).</li>'+
    '<li><b>Tandas.</b> Si hay menos tableros que partidas, la ronda se divide en tandas. La tanda B entra conforme se desocupen tableros; quienes esperan en una ronda juegan primero en la siguiente.</li>'+
-   '<li><b>Captura resultados.</b> En cada mesa toca 1–0 (ganan blancas), ½–½ (tablas) o 0–1 (ganan negras). Para corregir, toca otra opción; si tocas la misma, se borra.</li>'+
+   '<li><b>Captura resultados.</b> En cada mesa toca <span class="nw">1–0</span> (ganan blancas), <span class="nw">½–½</span> (tablas) o <span class="nw">0–1</span> (ganan negras). Para corregir, toca otra opción; si tocas la misma, se borra.</li>'+
    '<li><b>Ronda completa.</b> Al capturar el último resultado, el reloj se detiene y arriba aparece “Ronda completa” con el botón para emparejar la siguiente ronda. El mismo botón está al final de la lista.</li>'+
    '<li><b>Copiar emparejamientos.</b> Copia la ronda como texto para pegarla en WhatsApp o en un documento.</li>'+
    '<li><b>Deshacer esta ronda.</b> Está en su propio renglón, abajo, para no tocarlo por error. Borra los emparejamientos y resultados de la ronda actual; las anteriores se conservan.</li>'+
@@ -1017,12 +1019,12 @@ function manSections(){
    '<ul>'+
    '<li><b>Dónde se guarda.</b> Todo el torneo se guarda solo en este navegador y en este equipo, al momento, sin que tengas que guardar a mano.</li>'+
    '<li><b>Qué se pierde.</b> Si borras los datos del navegador (cookies y datos de sitios), desinstalas la app o usas una ventana de incógnito, se pierde el torneo completo: nombres, rondas y resultados.</li>'+
-   '<li><b>Qué sirve para recuperarlo.</b> Solo el archivo de respaldo (torneo-respaldo_….json). Guarda uno al terminar el torneo y, si quieres, después de cada ronda.</li>'+
+   '<li><b>Qué sirve para recuperarlo.</b> Solo el archivo de respaldo (<span class="nw">torneo-respaldo_….json</span>). Guarda uno al terminar el torneo y, si quieres, después de cada ronda.</li>'+
    '<li><b>Cada versión guarda su propio torneo.</b> La app instalada, el archivo HTML y el enlace de Claude no comparten datos; tampoco dos navegadores o dos equipos. Para pasar un torneo de uno a otro, usa el respaldo.</li></ul>'+
    '<p><b>La app aparece vacía</b></p><ol>'+
    '<li>Revisa que abriste la misma versión, en el mismo navegador y equipo donde capturaste.</li>'+
    '<li>Si se borraron los datos, ve a Ajustes › Respaldo y toca “Restaurar respaldo”.</li>'+
-   '<li>Elige el archivo torneo-respaldo_….json más reciente y toca “Sí, restaurar”.</li></ol>'+
+   '<li>Elige el archivo <span class="nw">torneo-respaldo_….json</span> más reciente y toca “Sí, restaurar”.</li></ol>'+
    '<p>Mientras hay una ronda en curso, la app pide mantener la pantalla encendida, si el navegador lo permite. Instalada desde su enlace, abre sin internet desde el ícono.</p>']
   ];
 }
@@ -1122,6 +1124,8 @@ function aboutHtml(){
     '<span>Emparejamiento: sistema suizo con desempates Buchholz, programado sin librerías externas</span>'+
     '</div></div></div></details>';
 }
+function tblHint(){var tw=document.querySelector(".tablewrap"),th=document.getElementById("tblhint");if(tw&&th) th.hidden=!(tw.scrollWidth>tw.clientWidth+2);}
+window.addEventListener("resize",function(){tblHint();});
 function render(){
   pendingRender=false;
   var keep=document.activeElement&&document.activeElement.id;
@@ -1136,6 +1140,7 @@ function render(){
   var v=document.getElementById("view");
   v.innerHTML=ui.tab==="man"?viewMan():ui.tab==="ronda"?viewRonda():ui.tab==="pos"?viewPos():ui.tab==="jug"?viewJug():viewAj();
   renderProj();
+  tblHint();
   if(keep){var el=document.getElementById(keep); if(el&&el!==document.activeElement){try{el.focus({preventScroll:true});}catch(e){}}}
   syncWake();
 }

@@ -1,12 +1,28 @@
-/* Torneo Suizo Escolar · versión 1.2.6 · Service Worker
+/* Torneo Suizo Escolar · versión 1.2.7 · Service Worker
    Guarda la app en el dispositivo para abrirla sin internet.
-   Al publicar una versión nueva, cambia el número de VERSION. */
-var VERSION="1.2.6";
+   Al publicar una versión nueva, cambia el número de VERSION.
+   La versión nueva se instala solo cuando index.html ya trae el mismo número. */
+var VERSION="1.2.7";
 var CACHE="torneo-suizo-p30-"+VERSION;
 var ARCHIVOS=["./","./index.html","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png","./icons/icon-maskable-512.png","./icons/apple-touch-icon.png","./icons/favicon-32.png"];
 
+// Instala solo si GitHub ya publicó todos los archivos de esta versión.
+// Si index.html todavía es el anterior, la instalación falla y el navegador vuelve a intentar después.
 self.addEventListener("install",function(e){
-  e.waitUntil(caches.open(CACHE).then(function(c){return c.addAll(ARCHIVOS);}));
+  e.waitUntil(Promise.all(ARCHIVOS.map(function(u){
+    return fetch(new Request(u,{cache:"reload"})).then(function(r){
+      if(!r.ok) throw new Error("No se pudo descargar "+u);
+      return [u,r];
+    });
+  })).then(function(lista){
+    var idx=lista.filter(function(x){return x[0]==="./index.html";})[0];
+    return idx[1].clone().text().then(function(t){
+      if(t.indexOf('var VERSION="'+VERSION+'"')<0) throw new Error("index.html todavía no es la versión "+VERSION);
+      return caches.open(CACHE).then(function(c){
+        return Promise.all(lista.map(function(x){return c.put(x[0],x[1]);}));
+      });
+    });
+  }));
 });
 self.addEventListener("message",function(e){if(e.data==="activar") self.skipWaiting();});
 self.addEventListener("activate",function(e){
@@ -33,6 +49,7 @@ function pagina(req){
 self.addEventListener("fetch",function(e){
   var req=e.request;
   if(req.method!=="GET") return;
+  if(req.cache==="no-store") return; // revisar versiones: siempre directo a internet
   var url=new URL(req.url);
   if(url.origin!==self.location.origin) return;
   if(req.mode==="navigate"){e.respondWith(pagina(req));return;}

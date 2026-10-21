@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <style>
-/* Layout: planilla de arbitraje en una columna; pestañas fijas arriba y filas de mesa grandes para capturar con el pulgar. */
+/* Layout: planilla de arbitraje en una columna; pestañas en una barra fija abajo, como en Asistencia y Tareas, y filas de mesa grandes para capturar con el pulgar. */
 :root{
   --bg:#eef2ec; --surface:#fbfcfa; --ink:#14221a; --muted:#56655c; --line:#cfd8cf;
   --felt:#2c6a49; --on-felt:#f6faf6; --felt-soft:#dbe9df;
@@ -41,7 +41,7 @@
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
 button,input,textarea{font:inherit;color:inherit}
-.app{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:14px 56px;display:flex;flex-direction:column;gap:14px}
+.app{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:14px calc(96px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
 
 .top{display:grid;grid-template-columns:38px minmax(0,1fr) 38px;align-items:start;gap:10px}
 .hbtn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center;padding:0;cursor:pointer;font-weight:700;font-size:18px;line-height:1}
@@ -60,10 +60,20 @@ h1{font-family:var(--display);font-weight:700;font-size:1.3rem;line-height:1.15;
 .exitbox{background:var(--buff);color:var(--on-buff);border-radius:12px;padding:12px 16px;display:flex;flex-direction:column;gap:10px}
 .appline{margin:2px 0 0;color:var(--muted);font-size:.75rem;letter-spacing:.02em}
 
-.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;
-  background:var(--bg);padding-block:6px;border-bottom:1px solid var(--line)}
-.tabs button{min-height:44px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-weight:600;font-size:.9rem;cursor:pointer;padding:0 4px}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;
+  background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(0,0,0,.06);
+  padding:6px max(10px,calc((100vw - 760px)/2 + 16px)) calc(6px + env(safe-area-inset-bottom,0px))}
+.tabs button{min-height:50px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-weight:600;font-size:.9rem;cursor:pointer;padding:0 4px}
 .tabs button[aria-selected="true"]{background:var(--felt);color:var(--on-felt)}
+/* fecha, hora y docente arriba de cada pestaña */
+.hd{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding:2px 2px 0}
+.hd .dia{font-family:var(--display);font-weight:700;font-size:1.35rem;line-height:1.1}
+.hd .fec{color:var(--muted);font-size:.95rem;margin-top:2px}
+.hd .hora{font-family:var(--display);font-weight:700;font-size:2.4rem;line-height:1;font-variant-numeric:tabular-nums;color:var(--felt);white-space:nowrap}
+.hd .hora small{font-family:var(--body);font-size:.95rem;font-weight:600;margin-left:4px}
+.dcl{font-size:17px;margin:4px 2px 0}
+.dcl.wa{font-size:15px;color:var(--muted)}
+@media(min-width:600px){.hd .dia{font-size:1.6rem}.hd .hora{font-size:3rem}.dcl{font-size:19px}}
 
 main{display:flex;flex-direction:column;gap:16px;min-width:0}
 h2{font-family:var(--display);font-weight:700;font-size:1.5rem;line-height:1.15;margin:0;text-wrap:balance}
@@ -196,6 +206,10 @@ label.btn{display:inline-flex;align-items:center}
 .pj-title span{color:var(--muted)}
 .pj-clock{font-family:var(--display);font-weight:700;font-size:2.6em;font-variant-numeric:tabular-nums;line-height:1}
 .pj-clock.zero{color:var(--danger)}
+.pj-now{display:flex;flex-direction:column;align-items:flex-end;line-height:1}
+.pj-now span{color:var(--muted);font-size:.7em;text-transform:uppercase;letter-spacing:.08em}
+.pj-now b{font-family:var(--display);font-size:1.6em;font-variant-numeric:tabular-nums;color:var(--felt)}
+.pj-now small{font-size:.5em;margin-left:3px}
 .pj-bar{display:flex;gap:8px;flex-wrap:wrap;font-size:16px}
 .pj-bar .chip{font-size:15px}
 .pj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,27em),1fr));gap:10px 24px}
@@ -214,12 +228,12 @@ label.btn{display:inline-flex;align-items:center}
 .pj-pos .pt{font-family:var(--display);font-weight:700;font-variant-numeric:tabular-nums}
 .pj-pos.top{background:var(--felt-soft)}
 @media (max-width:640px){.pj-m b{display:block}.pj-row{grid-template-columns:3.4em minmax(min-content,1fr) 3em}.pj-vs{display:none}.pj-row .pj-p+.pj-vs+.pj-p{grid-column:2}}
-.upd{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:10;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+.upd{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:25;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
   background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 12px 10px 16px;max-width:728px;margin:0 auto}
 .upd span{flex:1;min-width:12ch}
 .upd button{min-height:40px;border-radius:9px;border:0;padding:0 14px;background:var(--felt);color:var(--on-felt);font-weight:600;cursor:pointer}
 textarea{width:100%;min-height:160px;border:1px solid var(--line);border-radius:9px;background:var(--surface);padding:10px;font-size:.875rem}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);
   padding:10px 16px;border-radius:999px;font-size:.9rem;max-width:calc(100% - 32px);z-index:9;text-align:center}
 @media (max-width:560px){
   th,td{padding:7px 4px}
@@ -237,7 +251,7 @@ textarea{width:100%;min-height:160px;border:1px solid var(--line);border-radius:
     <button type="button" class="hbtn" id="b-exit" data-act="exit-ask" aria-label="Salir de la app" title="Salir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg></button>
     <div class="brand">
       <span class="glyph" aria-hidden="true"></span>
-      <div><h1 id="t-name">Torneo de Ajedrez Escolar</h1><p class="status" id="t-status"></p><p class="appline">Torneo Suizo Escolar · 30 Santo Domingo · versión 1.2.8</p><p class="cloudrow"><span class="cloud" id="cloud">En este dispositivo</span></p></div>
+      <div><h1 id="t-name">Torneo de Ajedrez Escolar</h1><p class="status" id="t-status"></p><p class="cloudrow" id="cloudrow" hidden><span class="cloud" id="cloud">En este dispositivo</span></p></div>
     </div>
     <button type="button" class="hbtn" id="b-help" data-act="help" aria-label="Ayuda: abre el manual en la sección de esta pantalla" title="Ayuda">?</button>
   </header>
@@ -260,7 +274,7 @@ textarea{width:100%;min-height:160px;border:1px solid var(--line);border-radius:
 /* ---------- Lógica del torneo (sin DOM) ---------- */
 function blank(n){
   var ps=[]; for(var i=1;i<=n;i++) ps.push({id:i,name:"",active:true});
-  return {v:1,name:"Torneo de Ajedrez Escolar",boards:1,rounds:1,minutes:15,players:ps,rondas:[],playoff:null,updatedAt:0,device:""};
+  return {v:1,name:"Torneo de Ajedrez Escolar",docente:"",boards:1,rounds:1,minutes:15,players:ps,rondas:[],playoff:null,updatedAt:0,device:""};
 }
 // Puntos se guardan al doble (victoria 2, tablas 1) para no usar decimales.
 function stats(st,upto){
@@ -437,7 +451,7 @@ var LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function loadLocal(){try{var s=localStorage.getItem(LS_KEY);var d=s?JSON.parse(s):null;return d&&Array.isArray(d.players)&&Array.isArray(d.rondas)?d:null;}catch(e){return null;}}
 function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
 var state=loadLocal()||blank(2);
-var VERSION="1.2.8";
+var VERSION="1.3.1";
 var IS_PWA=!!document.querySelector('link[rel="manifest"]')&&location.protocol.indexOf("http")===0&&("serviceWorker" in navigator);
 var FRAMED=false; try{FRAMED=window.top!==window.self;}catch(e){FRAMED=true;}
 var ui={cards:{},bdc:false,askOk:false,manOpen:{},back:null,shrink:null,proj:false,projView:"pairs",about:false,tab:"ronda",round:null,unlock:false,confirm:null,copy:null,copyMsg:"",manual:false,sorteo:false,sorteoText:"",restore:null};
@@ -447,6 +461,7 @@ function setCloud(mode){
   var el=document.getElementById("cloud"); if(!el) return;
   el.className="cloud"+(mode==="sync"?" sync":"");
   el.textContent=mode==="sync"?"Guardado en la nube":mode==="ro"?"Solo lectura":"En este dispositivo";
+  var r=document.getElementById("cloudrow"); if(r) r.hidden=!(mode==="sync"||mode==="ro");
 }
 function queueCloud(){
   if(!docRef||readOnly) return;
@@ -545,7 +560,28 @@ function beep1(){
   }catch(e){}
 }
 if(!tLoad()) tReset();
+/* ---------- Fecha y hora (como en Asistencia) ---------- */
+var DAYL=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+var MESL=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+function nowParts(){
+  var d=new Date(),h=d.getHours(),m=d.getMinutes();
+  return {dia:DAYL[d.getDay()],fec:d.getDate()+" de "+MESL[d.getMonth()]+" de "+d.getFullYear(),
+    hora:((h%12)||12)+":"+(m<10?"0":"")+m,ap:h<12?"a. m.":"p. m."};
+}
+function hdHtml(){
+  var p=nowParts(),dc=(state.docente||"").trim();
+  return '<div id="hdh"><div class="hd"><div><p class="dia" id="hd-dia">'+p.dia+'</p><p class="fec" id="hd-fec">'+p.fec+'</p></div>'+
+    '<p class="hora" aria-label="Hora actual"><span id="hd-hora">'+p.hora+'</span><small id="hd-ap">'+p.ap+'</small></p></div>'+
+    (dc?'<p class="dcl">Docente: <b>'+esc(dc)+'</b></p>':(readOnly?'':'<p class="dcl wa">Falta tu nombre: escríbelo en Ajustes › Configuración</p>'))+'</div>';
+}
+var NOWK="";
+function nowTick(){
+  var p=nowParts(),k=p.dia+p.fec+p.hora+p.ap; if(k===NOWK) return; NOWK=k;
+  var set=function(id,v){var e=document.getElementById(id); if(e&&e.textContent!==v) e.textContent=v;};
+  set("hd-dia",p.dia); set("hd-fec",p.fec); set("hd-hora",p.hora); set("hd-ap",p.ap); set("pnow",p.hora); set("pnow-ap",p.ap);
+}
 setInterval(function(){
+  nowTick();
   var l=tLeft(),el=document.getElementById("clock"),pc=document.getElementById("pclock");
   if(el) el.textContent=fmtClock(l);
   if(pc){pc.textContent=fmtClock(l);pc.classList.toggle("zero",l<=0);}
@@ -615,6 +651,7 @@ function csvText(){
     line=line.concat([num(r.pts),num(r.buch),num(r.cut1),r.win,r.active?"Juega":"Retirado"]);
     out.push(line.map(q).join(","));
   });
+  if((state.docente||"").trim()) out.push("",[ "Torneo",state.name||"" ].map(q).join(","),["Docente",state.docente.trim()].map(q).join(","));
   return "\uFEFF"+out.join("\r\n");
 }
 
@@ -656,10 +693,10 @@ function projHtml(){
     '<button type="button" class="chip" id="pj-pos" data-act="proj-view" data-v="pos" aria-pressed="'+(ui.projView==="pos")+'">Posiciones</button>'+
     '<button type="button" class="chip" id="pj-full" data-act="proj-full">Pantalla completa</button>'+
     '<button type="button" class="chip" id="pj-close" data-act="proj-close">Cerrar ✕</button></div>';
-  if(!n) return '<div class="pj-top"><div class="pj-title"><b>'+esc(state.name||"Torneo")+'</b><span>El torneo aún no inicia</span></div>'+bar+'</div>';
+  if(!n) return '<div class="pj-top"><div class="pj-title"><b>'+esc(state.name||"Torneo")+'</b><span>El torneo aún no inicia</span></div>'+pjNow()+bar+'</div>';
   var last=n-1,rd=state.rondas[last],done=roundDone(rd),fin=finished(state);
   var showClock=ui.projView==="pairs"&&!done;
-  top='<div class="pj-top"><div class="pj-title"><b>'+esc(state.name||"Torneo")+'</b><span>'+(fin?"Torneo terminado":"Ronda "+n+" de "+state.rounds)+'</span></div>'+
+  top='<div class="pj-top"><div class="pj-title"><b>'+esc(state.name||"Torneo")+'</b><span>'+(fin?"Torneo terminado":"Ronda "+n+" de "+state.rounds)+'</span></div>'+pjNow()+
     (showClock?'<div class="pj-clock'+(tLeft()<=0?" zero":"")+'" id="pclock">'+fmtClock(tLeft())+'</div>':'')+bar+'</div>';
   var who=function(id,col){var nm=pname(id);return '<span class="pj-p"><i class="pc '+col+'"></i><b>'+id+'</b><span>'+(nm?esc(nm):"")+'</span></span>';};
   var body='';
@@ -685,13 +722,14 @@ function projHtml(){
 function renderProj(){
   var el=document.getElementById("proj"); if(!el) return;
   if(!ui.proj){el.hidden=true;el.innerHTML="";document.body.style.overflow="";return;}
-  el.innerHTML=projHtml(); el.hidden=false; document.body.style.overflow="hidden";
+  el.innerHTML=projHtml(); el.hidden=false; document.body.style.overflow="hidden"; NOWK="";
 }
 function closeProj(){
   ui.proj=false;
   try{if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen();}catch(e){}
   render();
 }
+function pjNow(){var p=nowParts();return '<div class="pj-now" aria-label="Hora actual"><span>Hora</span><b><span id="pnow">'+p.hora+'</span><small id="pnow-ap">'+p.ap+'</small></b></div>';}
 document.addEventListener("keydown",function(e){if(ui.proj&&e.key==="Escape"&&!document.fullscreenElement) closeProj(); if(e.key==="Enter"&&e.target&&e.target.id==="askw"){e.preventDefault(); if(ui.askOk&&ui.confirm) act(ui.confirm,{});}});
 
 /* ---------- Buscar actualización (solo app instalable de GitHub) ---------- */
@@ -960,6 +998,9 @@ function manSections(){
    '<li><b>Sortea los números.</b> Cada alumno saca su número, o pega la lista en Jugadores › Sorteo automático y la app los reparte al azar. Los nombres se pueden escribir antes o después de empezar.</li>'+
    '<li><b>Marca ausentes.</b> En Jugadores desmarca “Juega” a quien no llegó, antes de iniciar.</li>'+
    '<li><b>Inicia el torneo.</b> Toca “Iniciar torneo” y sienta a los alumnos según su mesa. El primero de cada mesa lleva blancas.</li></ol>'+
+   '<p><b>Pestañas</b></p><ul>'+
+   '<li><b>Barra de abajo.</b> Ronda · Posiciones · Jugadores · Ajustes están siempre abajo, a la mano del pulgar, como en las apps de Asistencia y Tareas.</li>'+
+   '<li><b>Fecha, hora y docente.</b> Arriba de cada pestaña ves el día, la fecha, la hora y “Docente: tu nombre”. Si falta tu nombre, escríbelo en Ajustes › Configuración.</li></ul>'+
    '<p><b>Botones de arriba</b></p><ul>'+
    '<li><b>⏻ Salir</b> (a la izquierda): pide confirmar y cierra la app. Tu torneo queda guardado. Si el teléfono no deja cerrarla, te dice cómo salir. También puedes salir desde Ajustes › Salir.</li>'+
    '<li><b>? Ayuda</b> (a la derecha): abre este manual en la sección de la pantalla donde estás. “Volver” te regresa ahí.</li></ul>'],
@@ -974,7 +1015,7 @@ function manSections(){
    '<li><b>Rondas anteriores.</b> Ábrelas con los botones R1, R2… Para cambiar un resultado toca “Corregir resultados”; los emparejamientos que ya se hicieron no cambian, solo los puntos.</li></ul>'],
   ["Modo proyector",
    '<ul>'+
-   '<li>En Ronda o en Posiciones toca “Modo proyector” para ver en grande los emparejamientos, el reloj o la tabla, ideal para el cañón o una TV. Ciérralo con “Cerrar ✕” o la tecla Esc.</li>'+
+   '<li>En Ronda o en Posiciones toca “Modo proyector” para ver en grande los emparejamientos, el reloj o la tabla, ideal para el cañón o una TV. Arriba muestra también la hora. Ciérralo con “Cerrar ✕” o la tecla Esc.</li>'+
    '<li>Con la laptop conectada al cañón en modo extendido, abre la app en dos ventanas del mismo navegador: una en el cañón con el modo proyector y otra para capturar. La proyectada se actualiza sola, reloj incluido.</li></ul>'],
   ["Posiciones",
    '<ul>'+
@@ -994,13 +1035,13 @@ function manSections(){
   ["Ajustes",
    '<ul>'+
    '<li><b>Orden de Ajustes.</b> Todas las tarjetas empiezan plegadas para no tocar nada por error; tócalas para abrirlas. Van de lo más usado a lo más delicado: Configuración · Respaldo · Ayuda · Actualizaciones · Acerca de la app · Salir · Borrar datos.</li>'+
-   '<li><b>Configuración.</b> Nombre del torneo, jugadores, tableros, rondas y minutos por tanda. Un cambio de tableros reacomoda la ronda actual solo si aún no tiene resultados. Antes de iniciar, estos mismos valores también están en la pestaña Ronda.</li>'+
+   '<li><b>Configuración.</b> Nombre del torneo, docente que organiza (sale en Ronda, en Copiar posiciones y en el CSV), jugadores, tableros, rondas y minutos por tanda. Un cambio de tableros reacomoda la ronda actual solo si aún no tiene resultados. Antes de iniciar, estos mismos valores también están en la pestaña Ronda.</li>'+
    '<li><b>Respaldo.</b> “Guardar respaldo” descarga un archivo con todo el torneo; “Restaurar respaldo” lo carga (sección 9).</li>'+
    '<li><b>Ayuda.</b> “Ver manual de uso” abre esta guía; “Cómo empareja la app” explica las reglas del sistema suizo que usa.</li>'+
    (IS_PWA?'<li><b>Actualizaciones.</b> Muestra la versión instalada y “Buscar actualización”. Si hay una versión nueva, toca “Actualizar”; el torneo guardado no se pierde. Si la versión nueva todavía se está publicando, la app te avisa y vuelve a revisar sola.</li>':'<li><b>Actualizaciones.</b> Muestra la versión y cómo se actualiza esta copia de la app.</li>')+
    '<li><b>Acerca de la app.</b> Versión, créditos y tecnología.</li>'+
    '<li><b>Salir.</b> “Salir de la app” hace lo mismo que el botón ⏻.</li>'+
-   '<li><b>Borrar datos</b>, de menor a mayor alcance: <b>Reiniciar torneo</b> borra rondas y resultados y conserva nombres y ajustes, para repetir con el mismo grupo; <b>Nuevo torneo desde cero</b> (en rojo) borra todo y regresa a 2 jugadores, 1 tablero, 1 ronda y 15 minutos. Cada uno pide escribir BORRAR; el botón Confirmar se activa al escribirlo y Enter también confirma.</li></ul>'],
+   '<li><b>Borrar datos</b>, de menor a mayor alcance: <b>Reiniciar torneo</b> borra rondas y resultados y conserva nombres y ajustes, para repetir con el mismo grupo; <b>Nuevo torneo desde cero</b> (en rojo) borra todo y regresa a 2 jugadores, 1 tablero, 1 ronda y 15 minutos; solo conserva el nombre del docente. Cada uno pide escribir BORRAR; el botón Confirmar se activa al escribirlo y Enter también confirma.</li></ul>'],
   ["Conteo de material",
    '<ul>'+
    '<li>Al terminar el tiempo se cuentan solo las piezas que siguen dentro del tablero: dama 9, torre 5, alfil 3, caballo 3, peón 1. El rey no cuenta.</li>'+
@@ -1063,7 +1104,9 @@ function updInner(){
 function viewAj(){
   var h='<h2>Ajustes</h2>';
   var cfg='<div class="field"><label for="in-name">Nombre del torneo</label>'+
-    '<input class="text" id="in-name" type="text" maxlength="80" value="'+esc(state.name)+'"'+dis()+'></div>'+settingsBlock();
+    '<input class="text" id="in-name" type="text" maxlength="80" value="'+esc(state.name)+'"'+dis()+'></div>'+
+    '<div class="field"><label for="in-doc">Docente que organiza</label>'+
+    '<input class="text" id="in-doc" type="text" maxlength="80" autocomplete="name" value="'+esc(state.docente||"")+'"'+dis()+'></div>'+settingsBlock();
   if(state.rondas.length>0) cfg+='<p class="note">Con el torneo empezado, los jugadores se agregan o retiran en la pestaña Jugadores. Un cambio de tableros reacomoda la ronda actual solo si aún no tiene resultados.</p>';
   var bk='<p class="note">Guarda el torneo completo en un archivo (JSON) para no perderlo o para pasarlo a otro equipo.</p>'+
     '<button type="button" class="btn wf" id="b-backup" data-act="backup">Guardar respaldo</button>'+
@@ -1090,7 +1133,7 @@ function viewAj(){
       '<button type="button" class="btn danger" id="b-askreset" data-act="askb" data-c="reset">Reiniciar torneo</button>'+
       '<p class="note">Borra rondas y resultados. Conserva nombres y ajustes, para repetir con el mismo grupo.</p>'+
       '<button type="button" class="btn dangerfill" id="b-askfresh" data-act="askb" data-c="fresh">Nuevo torneo desde cero</button>'+
-      '<p class="note">Borra todo: nombres, rondas, resultados y ajustes. Vuelve a 2 jugadores, 1 tablero, 1 ronda y 15 minutos.</p>';
+      '<p class="note">Borra todo: nombres, rondas, resultados y ajustes. Vuelve a 2 jugadores, 1 tablero, 1 ronda y 15 minutos. Conserva el nombre del docente.</p>';
     if(ui.confirm==="reset"||ui.confirm==="fresh"){
       var txt=ui.confirm==="reset"
         ?'<b>Reiniciar torneo.</b> Se borran todas las rondas y resultados. Los nombres y ajustes se conservan.'
@@ -1138,7 +1181,8 @@ function render(){
   if(bx) bx.style.visibility=(FRAMED||ui.tab==="man")?"hidden":"visible";
   if(bh) bh.style.visibility=ui.tab==="man"?"hidden":"visible";
   var v=document.getElementById("view");
-  v.innerHTML=ui.tab==="man"?viewMan():ui.tab==="ronda"?viewRonda():ui.tab==="pos"?viewPos():ui.tab==="jug"?viewJug():viewAj();
+  NOWK="";
+  v.innerHTML=ui.tab==="man"?viewMan():hdHtml()+(ui.tab==="ronda"?viewRonda():ui.tab==="pos"?viewPos():ui.tab==="jug"?viewJug():viewAj());
   renderProj();
   tblHint();
   if(keep){var el=document.getElementById(keep); if(el&&el!==document.activeElement){try{el.focus({preventScroll:true});}catch(e){}}}
@@ -1187,7 +1231,9 @@ function playersText(){
   return out.join("\n");
 }
 function standingsText(){
-  var rows=standings(state),out=[(state.name||"Torneo")+" · Posiciones"+(finished(state)?" finales":" tras "+state.rondas.length+" rondas"),""];
+  var rows=standings(state),out=[(state.name||"Torneo")+" · Posiciones"+(finished(state)?" finales":" tras "+state.rondas.length+" rondas")];
+  if((state.docente||"").trim()) out.push("Docente: "+state.docente.trim());
+  out.push("");
   rows.forEach(function(r){out.push(r.place+(r.tie?"=":"")+". No. "+r.id+(r.name?" "+r.name:"")+" · "+fmtPts(r.pts)+" pts · Bch "+fmtPts(r.buch)+" · Bch-1 "+fmtPts(r.cut1)+" · Gan "+r.win);});
   return out.join("\n");
 }
@@ -1246,7 +1292,7 @@ function act(a,d){
     case "csv": saveFile("torneo-posiciones_"+stamp()+".csv",csvText(),"text/csv"); break;
     case "restore":
       if(!ui.restore) return;
-      var data=ui.restore; ui.restore=null; ui.confirm=null; ui.round=null;
+      var data=ui.restore; ui.restore=null; ui.confirm=null; ui.round=null; if(!data.docente) data.docente=state.docente||"";
       mutate(function(s){Object.keys(s).forEach(function(k){delete s[k];}); Object.keys(data).forEach(function(k){s[k]=data[k];});});
       tReset(); render(); toast("Respaldo restaurado"); break;
     case "sortear":
@@ -1262,7 +1308,7 @@ function act(a,d){
     case "fresh":
       if(!ui.askOk) return; ui.askOk=false; ui.cards.bdc=false;
       ui.confirm=null; ui.round=null; ui.unlock=false; ui.sorteoText="";
-      mutate(function(s){var b=blank(2);Object.keys(s).forEach(function(k){delete s[k];});Object.keys(b).forEach(function(k){s[k]=b[k];});});
+      mutate(function(s){var b=blank(2),dc=s.docente||"";Object.keys(s).forEach(function(k){delete s[k];});Object.keys(b).forEach(function(k){s[k]=b[k];});s.docente=dc;});
       ui.tab="ronda"; tReset(); render(); window.scrollTo(0,0); toast("Nuevo torneo listo: 2 jugadores, 1 tablero, 1 ronda"); break;
     case "addp": mutate(function(s){s.players.push({id:s.players.length+1,name:"",active:true});}); break;
     case "po": mutate(function(s){s.playoff={a:+d.a,b:+d.b,winner:+d.w};}); break;
@@ -1297,6 +1343,8 @@ document.addEventListener("input",function(e){
     var bs=document.getElementById("b-borrar-si"); if(bs) bs.disabled=!ui.askOk;
   }else if(t.id==="in-sorteo"){
     ui.sorteoText=t.value;
+  }else if(t.id==="in-doc"){
+    mutate(function(s){s.docente=t.value;},true);
   }else if(t.id==="in-name"){
     mutate(function(s){s.name=t.value;},true);
     document.getElementById("t-name").textContent=t.value||"Torneo de Ajedrez Escolar";

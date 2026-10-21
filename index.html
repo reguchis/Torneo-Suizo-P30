@@ -451,7 +451,7 @@ var LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function loadLocal(){try{var s=localStorage.getItem(LS_KEY);var d=s?JSON.parse(s):null;return d&&Array.isArray(d.players)&&Array.isArray(d.rondas)?d:null;}catch(e){return null;}}
 function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
 var state=loadLocal()||blank(2);
-var VERSION="1.3.1";
+var VERSION="1.3.2";
 var IS_PWA=!!document.querySelector('link[rel="manifest"]')&&location.protocol.indexOf("http")===0&&("serviceWorker" in navigator);
 var FRAMED=false; try{FRAMED=window.top!==window.self;}catch(e){FRAMED=true;}
 var ui={cards:{},bdc:false,askOk:false,manOpen:{},back:null,shrink:null,proj:false,projView:"pairs",about:false,tab:"ronda",round:null,unlock:false,confirm:null,copy:null,copyMsg:"",manual:false,sorteo:false,sorteoText:"",restore:null};
@@ -1035,7 +1035,7 @@ function manSections(){
   ["Ajustes",
    '<ul>'+
    '<li><b>Orden de Ajustes.</b> Todas las tarjetas empiezan plegadas para no tocar nada por error; tócalas para abrirlas. Van de lo más usado a lo más delicado: Configuración · Respaldo · Ayuda · Actualizaciones · Acerca de la app · Salir · Borrar datos.</li>'+
-   '<li><b>Configuración.</b> Nombre del torneo, docente que organiza (sale en Ronda, en Copiar posiciones y en el CSV), jugadores, tableros, rondas y minutos por tanda. Un cambio de tableros reacomoda la ronda actual solo si aún no tiene resultados. Antes de iniciar, estos mismos valores también están en la pestaña Ronda.</li>'+
+   '<li><b>Configuración.</b> Nombre del torneo y docente que organiza: escríbelos y toca <b>Guardar</b>; tu nombre aparece arriba de cada pestaña, en Copiar posiciones y en el CSV (también se guarda solo mientras escribes). Además, jugadores, tableros, rondas y minutos por tanda. Un cambio de tableros reacomoda la ronda actual solo si aún no tiene resultados. Antes de iniciar, estos mismos valores también están en la pestaña Ronda.</li>'+
    '<li><b>Respaldo.</b> “Guardar respaldo” descarga un archivo con todo el torneo; “Restaurar respaldo” lo carga (sección 9).</li>'+
    '<li><b>Ayuda.</b> “Ver manual de uso” abre esta guía; “Cómo empareja la app” explica las reglas del sistema suizo que usa.</li>'+
    (IS_PWA?'<li><b>Actualizaciones.</b> Muestra la versión instalada y “Buscar actualización”. Si hay una versión nueva, toca “Actualizar”; el torneo guardado no se pierde. Si la versión nueva todavía se está publicando, la app te avisa y vuelve a revisar sola.</li>':'<li><b>Actualizaciones.</b> Muestra la versión y cómo se actualiza esta copia de la app.</li>')+
@@ -1106,7 +1106,8 @@ function viewAj(){
   var cfg='<div class="field"><label for="in-name">Nombre del torneo</label>'+
     '<input class="text" id="in-name" type="text" maxlength="80" value="'+esc(state.name)+'"'+dis()+'></div>'+
     '<div class="field"><label for="in-doc">Docente que organiza</label>'+
-    '<input class="text" id="in-doc" type="text" maxlength="80" autocomplete="name" value="'+esc(state.docente||"")+'"'+dis()+'></div>'+settingsBlock();
+    '<input class="text" id="in-doc" type="text" maxlength="80" autocomplete="name" value="'+esc(state.docente||"")+'"'+dis()+'></div>'+
+    '<button type="button" class="btn wf" id="b-cfg-save" data-act="cfg-save"'+dis()+'>Guardar</button>'+settingsBlock();
   if(state.rondas.length>0) cfg+='<p class="note">Con el torneo empezado, los jugadores se agregan o retiran en la pestaña Jugadores. Un cambio de tableros reacomoda la ronda actual solo si aún no tiene resultados.</p>';
   var bk='<p class="note">Guarda el torneo completo en un archivo (JSON) para no perderlo o para pasarlo a otro equipo.</p>'+
     '<button type="button" class="btn wf" id="b-backup" data-act="backup">Guardar respaldo</button>'+
@@ -1310,6 +1311,11 @@ function act(a,d){
       ui.confirm=null; ui.round=null; ui.unlock=false; ui.sorteoText="";
       mutate(function(s){var b=blank(2),dc=s.docente||"";Object.keys(s).forEach(function(k){delete s[k];});Object.keys(b).forEach(function(k){s[k]=b[k];});s.docente=dc;});
       ui.tab="ronda"; tReset(); render(); window.scrollTo(0,0); toast("Nuevo torneo listo: 2 jugadores, 1 tablero, 1 ronda"); break;
+    case "cfg-save":
+      var ni=document.getElementById("in-name"),di=document.getElementById("in-doc");
+      try{if(document.activeElement&&document.activeElement.blur) document.activeElement.blur();}catch(e){}
+      mutate(function(s){if(ni) s.name=ni.value; if(di) s.docente=di.value;});
+      toast("Guardado"); break;
     case "addp": mutate(function(s){s.players.push({id:s.players.length+1,name:"",active:true});}); break;
     case "po": mutate(function(s){s.playoff={a:+d.a,b:+d.b,winner:+d.w};}); break;
     case "po-clear": mutate(function(s){s.playoff=null;}); break;
@@ -1350,8 +1356,10 @@ document.addEventListener("input",function(e){
     document.getElementById("t-name").textContent=t.value||"Torneo de Ajedrez Escolar";
   }
 });
+function refreshHd(){var e=document.getElementById("hdh"); if(e) e.outerHTML=hdHtml(); NOWK="";}
 document.addEventListener("change",function(e){
   var t=e.target;
+  if(t.id==="in-doc"||t.id==="in-name") refreshHd();
   if(t.classList&&t.classList.contains("pact")){
     var id=+t.dataset.id;
     mutate(function(s){s.players.forEach(function(p){if(p.id===id)p.active=t.checked;});});

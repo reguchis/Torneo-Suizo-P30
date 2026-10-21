@@ -1,8 +1,8 @@
-/* Torneo Suizo Escolar · versión 1.3.4 · Service Worker
+/* Torneo Suizo Escolar · versión 1.3.5 · Service Worker
    Guarda la app en el dispositivo para abrirla sin internet.
    Al publicar una versión nueva, cambia el número de VERSION.
    La versión nueva se instala solo cuando index.html ya trae el mismo número. */
-var VERSION="1.3.4";
+var VERSION="1.3.5";
 var CACHE="torneo-suizo-p30-"+VERSION;
 var ARCHIVOS=["./","./index.html","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png","./icons/icon-maskable-512.png","./icons/apple-touch-icon.png","./icons/favicon-32.png"];
 
@@ -24,7 +24,10 @@ self.addEventListener("install",function(e){
     });
   }));
 });
-self.addEventListener("message",function(e){if(e.data==="activar") self.skipWaiting();});
+self.addEventListener("message",function(e){
+  if(e.data==="activar") self.skipWaiting();
+  else if(e.data==="version"&&e.ports&&e.ports[0]) e.ports[0].postMessage(VERSION); // 1.3.5: la app pregunta qué versión espera
+});
 self.addEventListener("activate",function(e){
   e.waitUntil(caches.keys().then(function(keys){
     return Promise.all(keys.filter(function(k){return k.indexOf("torneo-suizo-p30-")===0&&k!==CACHE;}).map(function(k){return caches.delete(k);}));

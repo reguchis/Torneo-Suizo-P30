@@ -65,15 +65,20 @@ h1{font-family:var(--display);font-weight:700;font-size:1.3rem;line-height:1.15;
   padding:6px max(10px,calc((100vw - 760px)/2 + 16px)) calc(6px + env(safe-area-inset-bottom,0px))}
 .tabs button{min-height:50px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-weight:600;font-size:.9rem;cursor:pointer;padding:0 4px}
 .tabs button[aria-selected="true"]{background:var(--felt);color:var(--on-felt)}
-/* fecha, hora y docente arriba de cada pestaña */
+/* fecha, hora y docente: completo en Ronda, renglón compacto en las demás pestañas */
 .hd{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding:2px 2px 0}
+.hd>div{min-width:0}
 .hd .dia{font-family:var(--display);font-weight:700;font-size:1.35rem;line-height:1.1}
 .hd .fec{color:var(--muted);font-size:.95rem;margin-top:2px}
 .hd .hora{font-family:var(--display);font-weight:700;font-size:2.4rem;line-height:1;font-variant-numeric:tabular-nums;color:var(--felt);white-space:nowrap}
 .hd .hora small{font-family:var(--body);font-size:.95rem;font-weight:600;margin-left:4px}
-.dcl{font-size:17px;margin:4px 2px 0}
+.dcl{font-size:17px;margin:4px 2px 0;overflow-wrap:break-word}
+.hdc{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:0 2px 8px;border-bottom:1px solid var(--line);font-size:.95rem;color:var(--muted)}
+.hdc>span{min-width:0}
+.hdc b{color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.hdc small{font-size:.8em;margin-left:3px}
 .dcl.wa{font-size:15px;color:var(--muted)}
-@media(min-width:600px){.hd .dia{font-size:1.6rem}.hd .hora{font-size:3rem}.dcl{font-size:19px}}
+@media(min-width:600px){.hd .dia{font-size:1.6rem}.hd .fec{font-size:1.05rem}.hd .hora{font-size:3rem}.dcl{font-size:19px}.hdc{font-size:1.08rem}}
 
 main{display:flex;flex-direction:column;gap:16px;min-width:0}
 h2{font-family:var(--display);font-weight:700;font-size:1.5rem;line-height:1.15;margin:0;text-wrap:balance}
@@ -262,6 +267,7 @@ textarea{width:100%;min-height:160px;border:1px solid var(--line);border-radius:
     <button role="tab" id="tab-jug" data-act="tab" data-t="jug">Jugadores</button>
     <button role="tab" id="tab-aj" data-act="tab" data-t="aj">Ajustes</button>
   </nav>
+  <div id="hdbox" hidden></div>
   <main id="view"></main>
 </div>
 <div class="proj" id="proj" role="dialog" aria-label="Modo proyector" hidden></div>
@@ -451,7 +457,7 @@ var LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function loadLocal(){try{var s=localStorage.getItem(LS_KEY);var d=s?JSON.parse(s):null;return d&&Array.isArray(d.players)&&Array.isArray(d.rondas)?d:null;}catch(e){return null;}}
 function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
 var state=loadLocal()||blank(2);
-var VERSION="1.3.2";
+var VERSION="1.3.3";
 var IS_PWA=!!document.querySelector('link[rel="manifest"]')&&location.protocol.indexOf("http")===0&&("serviceWorker" in navigator);
 var FRAMED=false; try{FRAMED=window.top!==window.self;}catch(e){FRAMED=true;}
 var ui={cards:{},bdc:false,askOk:false,manOpen:{},back:null,shrink:null,proj:false,projView:"pairs",about:false,tab:"ronda",round:null,unlock:false,confirm:null,copy:null,copyMsg:"",manual:false,sorteo:false,sorteoText:"",restore:null};
@@ -568,8 +574,9 @@ function nowParts(){
   return {dia:DAYL[d.getDay()],fec:d.getDate()+" de "+MESL[d.getMonth()]+" de "+d.getFullYear(),
     hora:((h%12)||12)+":"+(m<10?"0":"")+m,ap:h<12?"a. m.":"p. m."};
 }
-function hdHtml(){
+function hdHtml(mode){
   var p=nowParts(),dc=(state.docente||"").trim();
+  if(mode==="compact") return '<div id="hdh" class="hdc"><span id="hd-fl">'+p.dia+' '+p.fec+'</span><b aria-label="Hora actual"><span id="hd-hora">'+p.hora+'</span><small id="hd-ap">'+p.ap+'</small></b></div>';
   return '<div id="hdh"><div class="hd"><div><p class="dia" id="hd-dia">'+p.dia+'</p><p class="fec" id="hd-fec">'+p.fec+'</p></div>'+
     '<p class="hora" aria-label="Hora actual"><span id="hd-hora">'+p.hora+'</span><small id="hd-ap">'+p.ap+'</small></p></div>'+
     (dc?'<p class="dcl">Docente: <b>'+esc(dc)+'</b></p>':(readOnly?'':'<p class="dcl wa">Falta tu nombre: escríbelo en Ajustes › Configuración</p>'))+'</div>';
@@ -578,7 +585,7 @@ var NOWK="";
 function nowTick(){
   var p=nowParts(),k=p.dia+p.fec+p.hora+p.ap; if(k===NOWK) return; NOWK=k;
   var set=function(id,v){var e=document.getElementById(id); if(e&&e.textContent!==v) e.textContent=v;};
-  set("hd-dia",p.dia); set("hd-fec",p.fec); set("hd-hora",p.hora); set("hd-ap",p.ap); set("pnow",p.hora); set("pnow-ap",p.ap);
+  set("hd-dia",p.dia); set("hd-fec",p.fec); set("hd-fl",p.dia+" "+p.fec); set("hd-hora",p.hora); set("hd-ap",p.ap); set("pnow",p.hora); set("pnow-ap",p.ap);
 }
 setInterval(function(){
   nowTick();
@@ -1000,7 +1007,7 @@ function manSections(){
    '<li><b>Inicia el torneo.</b> Toca “Iniciar torneo” y sienta a los alumnos según su mesa. El primero de cada mesa lleva blancas.</li></ol>'+
    '<p><b>Pestañas</b></p><ul>'+
    '<li><b>Barra de abajo.</b> Ronda · Posiciones · Jugadores · Ajustes están siempre abajo, a la mano del pulgar, como en las apps de Asistencia y Tareas.</li>'+
-   '<li><b>Fecha, hora y docente.</b> Arriba de cada pestaña ves el día, la fecha, la hora y “Docente: tu nombre”. Si falta tu nombre, escríbelo en Ajustes › Configuración.</li></ul>'+
+   '<li><b>Fecha, hora y docente.</b> En Ronda, arriba, ves el día, la fecha, la hora y “Docente: tu nombre”. En Posiciones, Jugadores y Ajustes, un renglón con la fecha y la hora. La hora cambia sola. Si falta tu nombre, Ronda te avisa; escríbelo en Ajustes › Configuración.</li></ul>'+
    '<p><b>Botones de arriba</b></p><ul>'+
    '<li><b>⏻ Salir</b> (a la izquierda): pide confirmar y cierra la app. Tu torneo queda guardado. Si el teléfono no deja cerrarla, te dice cómo salir. También puedes salir desde Ajustes › Salir.</li>'+
    '<li><b>? Ayuda</b> (a la derecha): abre este manual en la sección de la pantalla donde estás. “Volver” te regresa ahí.</li></ul>'],
@@ -1035,7 +1042,7 @@ function manSections(){
   ["Ajustes",
    '<ul>'+
    '<li><b>Orden de Ajustes.</b> Todas las tarjetas empiezan plegadas para no tocar nada por error; tócalas para abrirlas. Van de lo más usado a lo más delicado: Configuración · Respaldo · Ayuda · Actualizaciones · Acerca de la app · Salir · Borrar datos.</li>'+
-   '<li><b>Configuración.</b> Nombre del torneo y docente que organiza: escríbelos y toca <b>Guardar</b>; tu nombre aparece arriba de cada pestaña, en Copiar posiciones y en el CSV (también se guarda solo mientras escribes). Además, jugadores, tableros, rondas y minutos por tanda. Un cambio de tableros reacomoda la ronda actual solo si aún no tiene resultados. Antes de iniciar, estos mismos valores también están en la pestaña Ronda.</li>'+
+   '<li><b>Configuración.</b> Nombre del torneo y docente que organiza: escríbelos y toca <b>Guardar</b>; tu nombre aparece arriba de Ronda, en Copiar posiciones y en el CSV (también se guarda solo mientras escribes). Mientras falte tu nombre, Configuración se abre sola al entrar a Ajustes. Además, jugadores, tableros, rondas y minutos por tanda. Un cambio de tableros reacomoda la ronda actual solo si aún no tiene resultados. Antes de iniciar, estos mismos valores también están en la pestaña Ronda.</li>'+
    '<li><b>Respaldo.</b> “Guardar respaldo” descarga un archivo con todo el torneo; “Restaurar respaldo” lo carga (sección 9).</li>'+
    '<li><b>Ayuda.</b> “Ver manual de uso” abre esta guía; “Cómo empareja la app” explica las reglas del sistema suizo que usa.</li>'+
    (IS_PWA?'<li><b>Actualizaciones.</b> Muestra la versión instalada y “Buscar actualización”. Si hay una versión nueva, toca “Actualizar”; el torneo guardado no se pierde. Si la versión nueva todavía se está publicando, la app te avisa y vuelve a revisar sola.</li>':'<li><b>Actualizaciones.</b> Muestra la versión y cómo se actualiza esta copia de la app.</li>')+
@@ -1170,6 +1177,15 @@ function aboutHtml(){
 }
 function tblHint(){var tw=document.querySelector(".tablewrap"),th=document.getElementById("tblhint");if(tw&&th) th.hidden=!(tw.scrollWidth>tw.clientWidth+2);}
 window.addEventListener("resize",function(){tblHint();});
+var HDK=null;
+// El encabezado vive fuera de #view: solo se vuelve a dibujar si cambia su forma o el docente; la hora la cambia nowTick().
+function drawHd(force){
+  var box=document.getElementById("hdbox"); if(!box) return;
+  var mode=ui.tab==="man"?"":ui.tab==="ronda"?"full":"compact";
+  var k=mode+"|"+(state.docente||"").trim()+"|"+readOnly;
+  if(!force&&k===HDK) return; HDK=k;
+  box.hidden=!mode; box.innerHTML=mode?hdHtml(mode):""; NOWK="";
+}
 function render(){
   pendingRender=false;
   var keep=document.activeElement&&document.activeElement.id;
@@ -1183,7 +1199,8 @@ function render(){
   if(bh) bh.style.visibility=ui.tab==="man"?"hidden":"visible";
   var v=document.getElementById("view");
   NOWK="";
-  v.innerHTML=ui.tab==="man"?viewMan():hdHtml()+(ui.tab==="ronda"?viewRonda():ui.tab==="pos"?viewPos():ui.tab==="jug"?viewJug():viewAj());
+  drawHd();
+  v.innerHTML=ui.tab==="man"?viewMan():ui.tab==="ronda"?viewRonda():ui.tab==="pos"?viewPos():ui.tab==="jug"?viewJug():viewAj();
   renderProj();
   tblHint();
   if(keep){var el=document.getElementById(keep); if(el&&el!==document.activeElement){try{el.focus({preventScroll:true});}catch(e){}}}
@@ -1244,7 +1261,7 @@ function copyText(txt){
 }
 function act(a,d){
   switch(a){
-    case "tab": ui.tab=d.t; ui.confirm=null; ui.copy=null; ui.unlock=false; ui.restore=null; render(); window.scrollTo(0,0); break;
+    case "tab": if(d.t==="aj"&&!readOnly){if(!(state.docente||"").trim()){ui.cards.cfgc=true;ui.cfgAuto=true;}else if(ui.cfgAuto){ui.cards.cfgc=false;ui.cfgAuto=false;}} ui.tab=d.t; ui.confirm=null; ui.copy=null; ui.unlock=false; ui.restore=null; render(); window.scrollTo(0,0); break;
     case "round": ui.round=+d.i; ui.unlock=false; ui.confirm=null; render(); break;
     case "step": setNum(d.k,(d.k==="players"?state.players.length:state[d.k])+(+d.d)); break;
     case "start":
@@ -1356,7 +1373,7 @@ document.addEventListener("input",function(e){
     document.getElementById("t-name").textContent=t.value||"Torneo de Ajedrez Escolar";
   }
 });
-function refreshHd(){var e=document.getElementById("hdh"); if(e) e.outerHTML=hdHtml(); NOWK="";}
+function refreshHd(){drawHd(true);}
 document.addEventListener("change",function(e){
   var t=e.target;
   if(t.id==="in-doc"||t.id==="in-name") refreshHd();

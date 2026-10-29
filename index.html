@@ -493,7 +493,7 @@ var LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function loadLocal(){try{var s=localStorage.getItem(LS_KEY);var d=s?JSON.parse(s):null;return d&&Array.isArray(d.players)&&Array.isArray(d.rondas)?d:null;}catch(e){return null;}}
 function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
 var state=loadLocal()||blank(2);
-var VERSION="1.3.8"; window.__APPVER=VERSION;
+var VERSION="1.3.9"; window.__APPVER=VERSION;
 var IS_PWA=!!document.querySelector('link[rel="manifest"]')&&location.protocol.indexOf("http")===0&&("serviceWorker" in navigator);
 var FRAMED=false; try{FRAMED=window.top!==window.self;}catch(e){FRAMED=true;}
 var ui={cards:{},bdc:false,askOk:false,manOpen:{},back:null,shrink:null,proj:false,projView:"pairs",about:false,tab:"ronda",round:null,unlock:false,confirm:null,copy:null,copyMsg:"",manual:false,sorteo:false,sorteoText:"",restore:null};
@@ -1019,6 +1019,7 @@ function viewPos(){
      (anyTie?' El signo = marca un empate sin resolver: los empatados comparten el lugar. Si es por el primer lugar, se decide con una final rápida a 5 min.':'')+'</p>';
   h+='<div class="row"><button type="button" class="btn" id="b-copys" data-act="copy-s">Copiar posiciones</button>'+
      '<button type="button" class="btn" id="b-csv" data-act="csv">Exportar a Excel (CSV)</button>'+
+     (n?'<button type="button" class="btn" id="b-pdf" data-act="pdf">PDF de posiciones</button>':'')+
      (n?'<button type="button" class="btn" id="b-projpos" data-act="proj-open" data-v="pos">Modo proyector</button>':'')+'</div>'+copyBox();
   return h;
 }
@@ -1085,7 +1086,8 @@ function manSections(){
    '<li><b>Desempates, en orden:</b> partida entre ellos (cuando empatan dos); Bch (Buchholz, suma de puntos de los rivales; un descanso cuenta como un rival con tus mismos puntos, para no castigar a quien descansó); Bch-1 (Buchholz sin el rival más débil); Gan (partidas ganadas). El signo = marca un empate sin resolver y los empatados comparten el lugar (por ejemplo, 3= y 3=).</li>'+
    '<li><b>Premia.</b> Al terminar aparecen el campeón y los lugares. Si dos o más empatan en primer lugar, la app pide el resultado de la final de desempate: toca el número de quien ganó.</li>'+
    '<li><b>Guardar respaldo.</b> Al terminar el torneo, el aviso trae el botón “Guardar respaldo” para conservarlo (sección 9).</li>'+
-   '<li><b>Copiar posiciones</b> y <b>Exportar a Excel (CSV)</b> para compartir o llevar la tabla a tu Excel.</li></ul>'],
+   '<li><b>Copiar posiciones</b> y <b>Exportar a Excel (CSV)</b> para compartir o llevar la tabla a tu Excel.</li>'+
+   '<li><b>PDF de posiciones.</b> Genera una hoja carta lista para imprimir o publicar. A mitad del torneo dice «Posiciones después de la ronda 3 de 5» y trae los resultados de esa ronda, mesa por mesa (quién jugó con blancas y con negras, y quién ganó), y la tabla de posiciones. Al terminar dice «Posiciones finales» y pone arriba al campeón y el segundo y tercer lugar. Si una ronda está a medias, el PDF sale con la última ronda completa. Si son muchos alumnos, sigue en otra hoja.</li></ul>'],
   ["Jugadores",
    '<ul>'+
    '<li><b>Número y nombre.</b> El número es el del sorteo; escribe el nombre cuando sepas a quién le tocó.</li>'+
@@ -1320,6 +1322,90 @@ function copyText(txt){
   var fail=function(){showText(txt,"");};
   try{navigator.clipboard.writeText(txt).then(function(){toast("Copiado. Pégalo donde lo necesites.");},fail);}catch(e){fail();}
 }
+
+/* ---------- 1.3.9: PDF de posiciones ----------
+   Hoja carta vertical (lienzo de 1000×1294 px → 612×792 pt). Usa las rondas completas: a mitad del torneo,
+   «Posiciones después de la ronda k de M» con los resultados de esa ronda, mesa por mesa; al terminar, «Posiciones finales»
+   con el campeón y los lugares arriba. Si una ronda está a medias, el PDF sale con la anterior completa. */
+var PW=1000,PH=1294,PM=56,PF='"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
+function pFit(c,t,w){t=String(t);if(c.measureText(t).width<=w)return t;while(t.length>1&&c.measureText(t+"…").width>w)t=t.slice(0,-1);return t+"…";}
+function pdfDate(){var d=new Date(),M=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"],z=function(n){return (n<10?"0":"")+n;};return d.getDate()+" de "+M[d.getMonth()]+" de "+d.getFullYear()+", "+z(d.getHours())+":"+z(d.getMinutes());}
+function posPdfData(){
+  var k=0;for(var i=0;i<state.rondas.length;i++){if(roundDone(state.rondas[i]))k=i+1;else break;}
+  if(!k) return null;
+  var st={};for(var x in state)st[x]=state[x];st.rondas=state.rondas.slice(0,k);
+  var rows=standings(st),fin=finished(st);
+  return {k:k,M:Math.max(st.rounds,k),rows:rows,fin:fin,nf:fin?needFinal(st,rows):null,rd:st.rondas[k-1]};
+}
+function posPdfPages(P){
+  var pages=[],c,y,pn=0,who=function(id){if(id==null)return "";var p=null;state.players.forEach(function(q){if(q.id===id)p=q;});return "No. "+id+(p&&p.name?" · "+p.name:"");};
+  var title=(state.name||"Torneo de Ajedrez Escolar"),sub=P.fin?"Posiciones finales":"Posiciones después de la ronda "+P.k+" de "+P.M;
+  function page(){var cv=document.createElement("canvas");cv.width=PW;cv.height=PH;c=cv.getContext("2d");c.fillStyle="#fff";c.fillRect(0,0,PW,PH);c.textBaseline="middle";pages.push(cv);pn++;
+    if(pn===1){c.fillStyle="#2c6a49";c.fillRect(PM,40,PW-2*PM,6);c.fillStyle="#14221a";c.font="bold 30px "+PF;c.fillText(pFit(c,title,PW-2*PM),PM,84);
+      c.font="bold 22px "+PF;c.fillStyle="#2c6a49";c.fillText(sub,PM,122);c.fillStyle="#56655c";c.font="16px "+PF;
+      var meta=((state.docente||"").trim()?"Docente: "+state.docente.trim()+"   ·   ":"")+"Generado: "+pdfDate();c.fillText(pFit(c,meta,PW-2*PM),PM,154);y=186}
+    else{c.fillStyle="#56655c";c.font="bold 16px "+PF;c.fillText(pFit(c,title+" · "+sub+" (cont. "+pn+")",PW-2*PM),PM,44);y=74}}
+  function need(h,rep){if(y+h>PH-50){page();if(rep)rep();}}
+  function sec(t){need(64);y+=14;c.fillStyle="#14221a";c.font="bold 21px "+PF;c.fillText(t,PM,y+14);y+=36}
+  function hdr(cols){c.fillStyle="#e7efe8";c.fillRect(PM,y,PW-2*PM,32);c.fillStyle="#14221a";c.font="bold 15px "+PF;var x=PM;cols.forEach(function(q){var w=q[1];c.textAlign=q[2]||"left";c.fillText(pFit(c,q[0],w-12),q[2]==="center"?x+w/2:x+8,y+16);c.textAlign="left";x+=w;});y+=32}
+  function row(cols,vals,o){o=o||{};var h=30;if(o.bg){c.fillStyle=o.bg;c.fillRect(PM,y,PW-2*PM,h);}var x=PM;cols.forEach(function(q,i){var w=q[1];c.fillStyle=o.col&&o.col[i]?o.col[i]:o.mute?"#8a968e":"#14221a";c.font=((o.bold&&o.bold[i])?"bold ":"")+"15px "+PF;c.textAlign=q[2]||"left";c.fillText(pFit(c,vals[i],w-12),q[2]==="center"?x+w/2:x+8,y+h/2);c.textAlign="left";x+=w;});
+    c.strokeStyle="#d4e0d6";c.lineWidth=1;c.beginPath();c.moveTo(PM,y+h+.5);c.lineTo(PW-PM,y+h+.5);c.stroke();y+=h}
+  page();
+  /* campeón y lugares */
+  var lab=function(r){return "No. "+r.id+(r.name?" · "+r.name:"");},R=P.rows;
+  if(P.fin&&!P.nf){var g2=R.filter(function(r){return r.place===2;}),g3=R.filter(function(r){return r.place===3;}),ln=[];
+    if(g2.length)ln.push("Segundo lugar"+(g2.length>1?" (empate)":"")+": "+g2.map(lab).join(", "));
+    if(g3.length)ln.push("Tercer lugar"+(g3.length>1?" (empate)":"")+": "+g3.map(lab).join(", "));
+    var bh=96+ln.length*28;c.fillStyle="#eef3ee";c.strokeStyle="#2c6a49";c.lineWidth=2;c.beginPath();c.rect(PM,y,PW-2*PM,bh);c.fill();c.stroke();
+    c.fillStyle="#2c6a49";c.font="bold 16px "+PF;c.fillText("CAMPEÓN",PM+24,y+28);c.fillStyle="#14221a";c.font="bold 28px "+PF;c.fillText(pFit(c,lab(R[0])+"  ·  "+fmtPts(R[0].pts)+" pts"+(R[0].pw?" (ganó la final de desempate)":""),PW-2*PM-48),PM+24,y+62);
+    c.font="17px "+PF;ln.forEach(function(t,i){c.fillText(pFit(c,t,PW-2*PM-48),PM+24,y+96+i*28);});y+=bh+10}
+  else if(P.nf){var G=P.nf.ids.map(function(id){return lab(R.filter(function(r){return r.id===id;})[0]);});c.fillStyle="#9a3412";c.font="bold 17px "+PF;
+    c.fillText(pFit(c,"Empate en primer lugar: falta la final de desempate entre "+G.join(", ")+".",PW-2*PM),PM,y+14);y+=36}
+  /* resultados de la ronda */
+  var rd=P.rd,nT=0;rd.games.forEach(function(g){if(g.b!=null&&g.tanda+1>nT)nT=g.tanda+1;});
+  var GC=[["Mesa",80,"center"],["Blancas",(PW-2*PM-80-120)/2],["Resultado",120,"center"],["Negras",(PW-2*PM-80-120)/2]],L="ABCDEFGHIJ";
+  sec("Resultados de la ronda "+P.k);hdr(GC);
+  var gh=function(){hdr(GC);};
+  for(var t=0;t<Math.max(nT,1);t++){
+    var list=rd.games.filter(function(g){return g.b!=null&&(g.tanda||0)===t;}).sort(function(a,b){return a.mesa-b.mesa;});
+    if(nT>1){need(30,gh);c.fillStyle="#2c6a49";c.font="bold 14px "+PF;c.fillText("Tanda "+L[t],PM+8,y+15);y+=30}
+    list.forEach(function(g){need(30,gh);var r=g.res==="1-0"?"1 – 0":g.res==="0-1"?"0 – 1":g.res==="d"?"½ – ½":"";
+      row(GC,[g.mesa,who(g.w),r,who(g.b)],{bold:[0,g.res==="1-0",1,g.res==="0-1"]});});
+  }
+  rd.games.forEach(function(g){if(g.b==null){need(30,gh);row(GC,["—",who(g.w),"Descansa (1 punto)",""],{mute:false});}});
+  /* posiciones */
+  var k=P.k,rw=k>12?26:34,fx=60+54+k*rw+56+52+60+48,SC=[["Lugar",60,"center"],["No.",54,"center"],["Alumno",PW-2*PM-fx]];
+  for(var i=0;i<k;i++)SC.push(["R"+(i+1),rw,"center"]);SC=SC.concat([["Pts",56,"center"],["Bch",52,"center"],["Bch-1",60,"center"],["Gan",48,"center"]]);
+  sec(P.fin?"Posiciones finales":"Posiciones después de la ronda "+k+" de "+P.M);hdr(SC);
+  var sh=function(){hdr(SC);};
+  R.forEach(function(r,idx){need(30,sh);var v=[r.place+(r.tie?"=":""),r.id,(r.name||"—")+(r.active?"":" (retirado)")];for(var i=0;i<k;i++)v.push(r.res[i]||"–");v=v.concat([fmtPts(r.pts),fmtPts(r.buch),fmtPts(r.cut1),r.win]);
+    var b=[1,0,idx===0&&P.fin&&!P.nf];b[3+k]=1;row(SC,v,{bold:b,bg:idx<3&&P.fin&&!P.nf?"#f4f8f4":null,mute:!r.active});});
+  need(70);c.fillStyle="#56655c";c.font="13px "+PF;
+  var nota="Desempates, en orden: partida entre ellos (cuando empatan dos); Bch (Buchholz, suma de puntos de los rivales; un descanso cuenta como un rival con tus mismos puntos); Bch-1 (Buchholz sin el rival más débil); Gan (partidas ganadas). 1 ganó, ½ tablas, 0 perdió, D descanso. El signo = marca un empate sin resolver.";
+  var ws=nota.split(" "),ln2="",yy=y+18;ws.forEach(function(w){var t2=ln2?ln2+" "+w:w;if(c.measureText(t2).width>PW-2*PM){c.fillText(ln2,PM,yy);yy+=18;ln2=w;}else ln2=t2;});if(ln2)c.fillText(ln2,PM,yy);
+  pages.forEach(function(cv,i){var x=cv.getContext("2d");x.fillStyle="#8a968e";x.font="12px "+PF;x.textAlign="right";x.textBaseline="middle";x.fillText("Torneo Suizo Escolar · página "+(i+1)+" de "+pages.length,PW-PM,PH-28);x.textAlign="left";});
+  return pages;
+}
+function pdfBlob(pages){
+  var enc=new TextEncoder(),parts=[],off=[],len=0,N=pages.length;
+  var add=function(x){var b=typeof x==="string"?enc.encode(x):x;parts.push(b);len+=b.length;},obj=function(n,x){off[n]=len;add(n+" 0 obj\n"+x+"\nendobj\n");};
+  add("%PDF-1.4\n");obj(1,"<</Type/Catalog/Pages 2 0 R>>");obj(2,"<</Type/Pages/Count "+N+"/Kids["+pages.map(function(_,i){return (3+3*i)+" 0 R";}).join(" ")+"]>>");
+  pages.forEach(function(cv,i){var s=atob(cv.toDataURL("image/jpeg",0.92).split(",")[1]),by=new Uint8Array(s.length);for(var j=0;j<s.length;j++)by[j]=s.charCodeAt(j);
+    var p=3+3*i,st="q 612 0 0 792 0 0 cm /Im0 Do Q";
+    obj(p,"<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Resources<</XObject<</Im0 "+(p+2)+" 0 R>>>>/Contents "+(p+1)+" 0 R>>");obj(p+1,"<</Length "+st.length+">>\nstream\n"+st+"\nendstream");
+    off[p+2]=len;add((p+2)+" 0 obj\n<</Type/XObject/Subtype/Image/Width "+cv.width+"/Height "+cv.height+"/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length "+by.length+">>\nstream\n");add(by);add("\nendstream\nendobj\n");});
+  var xr=len,tot=3*N+3;add("xref\n0 "+tot+"\n0000000000 65535 f \n");for(var k=1;k<tot;k++)add(String(off[k]).padStart(10,"0")+" 00000 n \n");add("trailer\n<</Size "+tot+"/Root 1 0 R>>\nstartxref\n"+xr+"\n%%EOF");
+  return new Blob(parts,{type:"application/pdf"});
+}
+function posPdf(){
+  var P=posPdfData();if(!P) return toast("Todavía no hay una ronda completa: captura los resultados de la ronda 1.");
+  var b;try{b=pdfBlob(posPdfPages(P));}catch(e){return toast("No se pudo crear el PDF en este navegador.");}
+  var name="torneo-posiciones_"+(P.fin?"finales":"ronda"+P.k)+"_"+stamp()+".pdf",url=URL.createObjectURL(b);
+  var plain=function(){try{var a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){a.remove();},1500);toast("PDF listo: "+name+" (hoja carta).");}catch(e){window.open(url,"_blank");}};
+  if(window.claude&&window.claude.use){window.claude.use("downloads").then(function(dl){if(!dl)return plain();dl.save({filename:name,data:b}).then(function(){toast("PDF listo: "+name+" (hoja carta).");},function(e){var c=e&&e.code;if(c==="declined")return;if(c==="rate_limited")return toast("Ya hay una descarga pendiente. Intenta de nuevo en un momento.");plain();});},plain);return;}
+  plain();
+  if(!P.fin&&P.k<state.rondas.length) toast("La ronda "+(P.k+1)+" aún no termina: el PDF va hasta la ronda "+P.k+".");
+}
 function act(a,d){
   switch(a){
     case "tab": if(d.t==="aj"&&!readOnly){if(!(state.docente||"").trim()){ui.cards.cfgc=true;ui.cfgAuto=true;}else if(ui.cfgAuto){ui.cards.cfgc=false;ui.cfgAuto=false;}} ui.tab=d.t; ui.confirm=null; ui.copy=null; ui.unlock=false; ui.restore=null; render(); window.scrollTo(0,0); break;
@@ -1374,6 +1460,7 @@ function act(a,d){
     case "shrink-yes": var to=ui.shrink; ui.confirm=null; ui.shrink=null; if(to!=null) setNum("players",to,true); else render(); break;
     case "backup": saveFile("torneo-respaldo_"+stamp()+".json",backupText(),"application/json"); break;
     case "csv": saveFile("torneo-posiciones_"+stamp()+".csv",csvText(),"text/csv"); break;
+    case "pdf": posPdf(); break;
     case "restore":
       if(!ui.restore) return;
       var data=ui.restore; ui.restore=null; ui.confirm=null; ui.round=null; if(!data.docente) data.docente=state.docente||"";

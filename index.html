@@ -13,7 +13,8 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}.sumv{color:var(--muted);font-size:.8125rem;font-weight:400}
+</style>
 <style>
 /* Layout: planilla de arbitraje en una columna; pestañas en una barra fija abajo, como en Asistencia y Tareas, y filas de mesa grandes para capturar con el pulgar. */
 :root{
@@ -493,7 +494,7 @@ var LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function loadLocal(){try{var s=localStorage.getItem(LS_KEY);var d=s?JSON.parse(s):null;return d&&Array.isArray(d.players)&&Array.isArray(d.rondas)?d:null;}catch(e){return null;}}
 function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
 var state=loadLocal()||blank(2);
-var VERSION="1.3.9"; window.__APPVER=VERSION;
+var VERSION="1.3.10"; window.__APPVER=VERSION;
 var IS_PWA=!!document.querySelector('link[rel="manifest"]')&&location.protocol.indexOf("http")===0&&("serviceWorker" in navigator);
 var FRAMED=false; try{FRAMED=window.top!==window.self;}catch(e){FRAMED=true;}
 var ui={cards:{},bdc:false,askOk:false,manOpen:{},back:null,shrink:null,proj:false,projView:"pairs",about:false,tab:"ronda",round:null,unlock:false,confirm:null,copy:null,copyMsg:"",manual:false,sorteo:false,sorteoText:"",restore:null};
@@ -1100,7 +1101,7 @@ function manSections(){
    '<ul>'+
    '<li><b>Orden de Ajustes.</b> Todas las tarjetas empiezan plegadas para no tocar nada por error; tócalas para abrirlas. Van de lo más usado a lo más delicado: Configuración · Respaldo · Ayuda · Actualizaciones · Acerca de la app · Salir · Borrar datos.</li>'+
    '<li><b>Configuración.</b> Nombre del torneo y docente que organiza: escríbelos y toca <b>Guardar</b>; tu nombre aparece arriba de Ronda, en Copiar posiciones y en el CSV (también se guarda solo mientras escribes). Mientras falte tu nombre, Configuración se abre sola al entrar a Ajustes. Además, jugadores, tableros, rondas y minutos por tanda. Un cambio de tableros reacomoda la ronda actual solo si aún no tiene resultados. Antes de iniciar, estos mismos valores también están en la pestaña Ronda.</li>'+
-   '<li><b>Respaldo.</b> “Guardar respaldo” descarga un archivo con todo el torneo; “Restaurar respaldo” lo carga (sección 9).</li>'+
+   '<li><b>Respaldo.</b> “Guardar respaldo” descarga un archivo con todo el torneo; “Restaurar (recuperar) un respaldo…” lo recupera desde el archivo; si el archivo es igual al torneo que ya tienes, la app avisa que no hay nada que recuperar (sección 9).</li>'+
    '<li><b>Ayuda.</b> “Ver manual de uso” abre esta guía; “Cómo empareja la app” explica las reglas del sistema suizo que usa.</li>'+
    (IS_PWA?'<li><b>Actualizaciones.</b> Muestra la versión instalada y “Buscar actualización”. Si hay una versión nueva, toca “Actualizar”; el torneo guardado no se pierde. Si la versión nueva todavía se está publicando, la app te avisa y vuelve a revisar sola.</li>':'<li><b>Actualizaciones.</b> Muestra la versión y cómo se actualiza esta copia de la app.</li>')+
    '<li><b>Acerca de la app.</b> Versión, créditos y tecnología.</li>'+
@@ -1128,7 +1129,7 @@ function manSections(){
    '<li><b>Cada versión guarda su propio torneo.</b> La app instalada, el archivo HTML y el enlace de Claude no comparten datos; tampoco dos navegadores o dos equipos. Para pasar un torneo de uno a otro, usa el respaldo.</li></ul>'+
    '<p><b>La app aparece vacía</b></p><ol>'+
    '<li>Revisa que abriste la misma versión, en el mismo navegador y equipo donde capturaste.</li>'+
-   '<li>Si se borraron los datos, ve a Ajustes › Respaldo y toca “Restaurar respaldo”.</li>'+
+   '<li>Si se borraron los datos, ve a Ajustes › Respaldo y toca “Restaurar (recuperar) un respaldo…”.</li>'+
    '<li>Elige el archivo <span class="nw">torneo-respaldo_….json</span> más reciente y toca “Sí, restaurar”.</li></ol>'+
    '<p>Mientras hay una ronda en curso, la app pide mantener la pantalla encendida, si el navegador lo permite. Instalada desde su enlace, abre sin internet desde el ícono.</p>']
   ];
@@ -1175,7 +1176,7 @@ function viewAj(){
   if(state.rondas.length>0) cfg+='<p class="note">Con el torneo empezado, los jugadores se agregan o retiran en la pestaña Jugadores. Un cambio de tableros reacomoda la ronda actual solo si aún no tiene resultados.</p>';
   var bk='<p class="note">Guarda el torneo completo en un archivo (JSON) para no perderlo o para pasarlo a otro equipo.</p>'+
     '<button type="button" class="btn wf" id="b-backup" data-act="backup">Guardar respaldo</button>'+
-    (readOnly?'':'<label class="btn wf" for="in-restore" style="justify-content:center">Restaurar respaldo</label><input type="file" id="in-restore" accept=".json,application/json" hidden>');
+    (readOnly?'':'<p class="note" style="margin-top:12px">¿Perdiste el torneo o cambiaste de equipo? Recupéralo desde un archivo torneo-respaldo_….json:</p><label class="btn wf" for="in-restore" style="justify-content:center">Restaurar (recuperar) un respaldo…</label><input type="file" id="in-restore" accept=".json,application/json" hidden>');
   if(ui.confirm==="restore"&&ui.restore){
     var R=ui.restore;
     bk+='<div class="banner buff"><p>El respaldo “'+esc(R.name||"Torneo")+'” tiene '+R.players.length+' jugadores y '+R.rondas.length+(R.rondas.length===1?' ronda':' rondas')+'. Restaurarlo reemplaza el torneo actual.</p>'+
@@ -1214,13 +1215,13 @@ function viewAj(){
   }
   h+='<div class="ajg">'+card("cfgc","Configuración",cfg)+'</div>';
   h+='<div class="ajg">'+card("bkc","Respaldo",bk)+'</div>';
-  h+='<div class="ajg">'+card("ayc","Ayuda",ay)+card("actc","Actualizaciones",updInner())+aboutHtml()+'</div>';
+  h+='<div class="ajg">'+card("ayc","Ayuda",ay)+card("actc",'<span>Actualizaciones <span class="sumv">· versión '+VERSION+'</span></span>',updInner())+aboutHtml()+'</div>';
   var last=(FRAMED?'':card("salc","Salir",sal))+(readOnly?'':card("bdc","Borrar datos",bd));
   if(last) h+='<div class="ajg">'+last+'</div>';
   return h;
 }
 function aboutHtml(){
-  return '<details class="card" id="acerca"'+(ui.cards.acerca?" open":"")+'><summary>Acerca de la app</summary><div class="about">'+
+  return '<details class="card" id="acerca"'+(ui.cards.acerca?" open":"")+'><summary><span>Acerca de la app <span class="sumv">· versión '+VERSION+'</span></span></summary><div class="about">'+
     '<div class="apptitle"><b>Torneo Suizo Escolar</b><span>30 Santo Domingo · versión '+VERSION+'</span></div>'+
     '<div><h4>Creada por</h4><p><b>Christian Reyes Guzmán</b><br>Docente del Plantel 30 Santo Domingo<br>Colegio de Bachilleres de Chiapas</p></div>'+
     '<p class="motto">Hecha por un docente para docentes: organiza un torneo de ajedrez con emparejamientos automáticos en minutos, con o sin internet.</p>'+
@@ -1538,7 +1539,9 @@ document.addEventListener("change",function(e){
   }else if(t.id==="in-restore"&&t.files&&t.files[0]){
     var fr=new FileReader();
     fr.onload=function(){
-      try{ui.restore=parseBackup(String(fr.result));ui.confirm="restore";ui.cards.bkc=true;render();}
+      try{var nb=parseBackup(String(fr.result)),K=["name","docente","boards","rounds","minutes","players","rondas","playoff","rr"],eq=K.every(function(x){return JSON.stringify(nb[x]==null?null:nb[x])===JSON.stringify(state[x]==null?null:state[x]);});t.value="";
+        if(eq){ui.restore=null;ui.confirm=null;render();return toast("Ese respaldo es igual al torneo que ya tienes: no hay nada que recuperar. Para guardar una copia usa «Guardar respaldo».");}
+        ui.restore=nb;ui.confirm="restore";ui.cards.bkc=true;render();}
       catch(e){ui.restore=null;ui.confirm=null;render();toast("Ese archivo no es un respaldo válido del torneo.");}
     };
     fr.onerror=function(){toast("No se pudo leer el archivo.");};

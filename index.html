@@ -494,7 +494,7 @@ var LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function loadLocal(){try{var s=localStorage.getItem(LS_KEY);var d=s?JSON.parse(s):null;return d&&Array.isArray(d.players)&&Array.isArray(d.rondas)?d:null;}catch(e){return null;}}
 function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
 var state=loadLocal()||blank(2);
-var VERSION="1.3.10"; window.__APPVER=VERSION;
+var VERSION="1.3.12"; window.__APPVER=VERSION;
 var IS_PWA=!!document.querySelector('link[rel="manifest"]')&&location.protocol.indexOf("http")===0&&("serviceWorker" in navigator);
 var FRAMED=false; try{FRAMED=window.top!==window.self;}catch(e){FRAMED=true;}
 var ui={cards:{},bdc:false,askOk:false,manOpen:{},back:null,shrink:null,proj:false,projView:"pairs",about:false,tab:"ronda",round:null,unlock:false,confirm:null,copy:null,copyMsg:"",manual:false,sorteo:false,sorteoText:"",restore:null};
@@ -962,7 +962,7 @@ function viewRonda(){
       h+='<button type="button" class="btn primary wide" id="b-next" data-act="next"'+(all&&!readOnly?"":" disabled")+'>Emparejar ronda '+(state.rondas.length+1)+'</button>';
       if(!all) h+='<p class="note">Faltan '+(real.length-doneN)+' resultados para emparejar la siguiente ronda.</p>';
     }
-    h+='<div class="row"><button type="button" class="btn" id="b-copyr" data-act="copy-r">Copiar emparejamientos</button><button type="button" class="btn" id="b-proj" data-act="proj-open" data-v="pairs">Modo proyector</button></div>';
+    h+='<div class="row"><button type="button" class="btn" id="b-copyr" data-act="copy-r">Copiar emparejamientos</button><button type="button" class="btn" id="b-pdfr" data-act="pdf-r">PDF de la ronda</button><button type="button" class="btn" id="b-proj" data-act="proj-open" data-v="pairs">Modo proyector</button></div>';
     if(!readOnly) h+='<div class="row undo-row"><button type="button" class="btn danger" id="b-askundo" data-act="ask" data-c="undo">Deshacer esta ronda</button></div>';
     if(ui.confirm==="undo"){
       h+='<div class="banner buff"><p>Se borran los emparejamientos y resultados de la ronda '+(last+1)+'. Las rondas anteriores se conservan.</p>'+
@@ -970,7 +970,7 @@ function viewRonda(){
     }
     h+='</div>';
   }else{
-    h+='<div class="row"><button type="button" class="btn" id="b-copyr" data-act="copy-r">Copiar emparejamientos</button><button type="button" class="btn" id="b-proj" data-act="proj-open" data-v="pairs">Modo proyector</button></div>';
+    h+='<div class="row"><button type="button" class="btn" id="b-copyr" data-act="copy-r">Copiar emparejamientos</button><button type="button" class="btn" id="b-pdfr" data-act="pdf-r">PDF de la ronda</button><button type="button" class="btn" id="b-proj" data-act="proj-open" data-v="pairs">Modo proyector</button></div>';
   }
   h+=copyBox();
   return h;
@@ -1075,6 +1075,7 @@ function manSections(){
    '<li><b>Captura resultados.</b> En cada mesa toca <span class="nw">1–0</span> (ganan blancas), <span class="nw">½–½</span> (tablas) o <span class="nw">0–1</span> (ganan negras). Para corregir, toca otra opción; si tocas la misma, se borra.</li>'+
    '<li><b>Ronda completa.</b> Al capturar el último resultado, el reloj se detiene y arriba aparece “Ronda completa” con el botón para emparejar la siguiente ronda. El mismo botón está al final de la lista.</li>'+
    '<li><b>Copiar emparejamientos.</b> Copia la ronda como texto para pegarla en WhatsApp o en un documento.</li>'+
+   '<li><b>PDF de la ronda.</b> Hoja carta con las mesas de cada tanda: quién juega con blancas, quién con negras y un recuadro para anotar el resultado; abajo, quién descansa. Sirve para imprimirla y pegarla antes de empezar.</li>'+
    '<li><b>Deshacer esta ronda.</b> Está en su propio renglón, abajo, para no tocarlo por error. Borra los emparejamientos y resultados de la ronda actual; las anteriores se conservan.</li>'+
    '<li><b>Rondas anteriores.</b> Ábrelas con los botones R1, R2… Para cambiar un resultado toca “Corregir resultados”; los emparejamientos que ya se hicieron no cambian, solo los puntos.</li></ul>'],
   ["Modo proyector",
@@ -1106,7 +1107,7 @@ function manSections(){
    (IS_PWA?'<li><b>Actualizaciones.</b> Muestra la versión instalada y “Buscar actualización”. Si hay una versión nueva, toca “Actualizar”; el torneo guardado no se pierde. Si la versión nueva todavía se está publicando, la app te avisa y vuelve a revisar sola.</li>':'<li><b>Actualizaciones.</b> Muestra la versión y cómo se actualiza esta copia de la app.</li>')+
    '<li><b>Acerca de la app.</b> Versión, créditos y tecnología.</li>'+
    '<li><b>Salir.</b> “Salir de la app” hace lo mismo que el botón ⏻.</li>'+
-   '<li><b>Borrar datos</b>, de menor a mayor alcance: <b>Reiniciar torneo</b> borra rondas y resultados y conserva nombres y ajustes, para repetir con el mismo grupo; <b>Nuevo torneo desde cero</b> (en rojo) borra todo y regresa a 2 jugadores, 1 tablero, 1 ronda y 15 minutos; solo conserva el nombre del docente. Cada uno pide escribir BORRAR; el botón Confirmar se activa al escribirlo y Enter también confirma.</li></ul>'],
+   '<li><b>Borrar datos</b>, de menor a mayor alcance: <b>Reiniciar torneo</b> borra rondas y resultados y conserva nombres y ajustes, para repetir con el mismo grupo; <b>Nuevo torneo desde cero</b> (en rojo) borra todo y regresa a 2 jugadores, 1 tablero, 1 ronda y 15 minutos; solo conserva el nombre del docente. Antes, cada uno pregunta si quieres guardar un respaldo del torneo: <b>Guardar respaldo y borrar</b>, <b>Borrar sin respaldo</b> o Cancelar. Si todavía no hay rondas, Reiniciar torneo solo avisa. Después pide escribir BORRAR; el botón Confirmar se activa al escribirlo y Enter también confirma.</li></ul>'],
   ["Conteo de material",
    '<ul>'+
    '<li>Al terminar el tiempo se cuentan solo las piezas que siguen dentro del tablero: dama 9, torre 5, alfil 3, caballo 3, peón 1. El rey no cuenta.</li>'+
@@ -1201,10 +1202,17 @@ function viewAj(){
       '<p class="note">Borra rondas y resultados. Conserva nombres y ajustes, para repetir con el mismo grupo.</p>'+
       '<button type="button" class="btn dangerfill" id="b-askfresh" data-act="askb" data-c="fresh">Nuevo torneo desde cero</button>'+
       '<p class="note">Borra todo: nombres, rondas, resultados y ajustes. Vuelve a 2 jugadores, 1 tablero, 1 ronda y 15 minutos. Conserva el nombre del docente.</p>';
+    if(ui.confirm==="bk-reset"||ui.confirm==="bk-fresh"){
+      var cc=ui.confirm.slice(3);
+      bd+='<div class="banner buff" id="askbox"><p><b>'+(cc==="reset"?"Reiniciar torneo":"Nuevo torneo desde cero")+'.</b> Antes de borrar, ¿quieres guardar un respaldo del torneo? Después te pedirá escribir BORRAR.</p>'+
+        '<button type="button" class="btn wf" id="b-bkb" data-act="bkb" data-c="'+cc+'">Guardar respaldo y borrar</button>'+
+        '<button type="button" class="btn wf" id="b-bkn" data-act="bkn" data-c="'+cc+'">Borrar sin respaldo</button>'+
+        '<button type="button" class="btn wf" id="b-bkc" data-act="cancel">Cancelar</button></div>';
+    }
     if(ui.confirm==="reset"||ui.confirm==="fresh"){
       var txt=ui.confirm==="reset"
         ?'<b>Reiniciar torneo.</b> Se borran todas las rondas y resultados. Los nombres y ajustes se conservan.'
-        :'<b>Nuevo torneo desde cero.</b> Se borra todo: nombres, rondas, resultados y ajustes. La app vuelve a 2 jugadores, 1 tablero, 1 ronda y 15 minutos. Si quieres conservar este torneo, primero toca “Guardar respaldo”.';
+        :'<b>Nuevo torneo desde cero.</b> Se borra todo: nombres, rondas, resultados y ajustes. La app vuelve a 2 jugadores, 1 tablero, 1 ronda y 15 minutos.';
       bd+='<div class="banner buff" id="askbox"><p>'+txt+'</p>'+
         '<label for="askw">Para confirmar, escribe BORRAR</label>'+
         '<input class="text" id="askw" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false">'+
@@ -1398,6 +1406,39 @@ function pdfBlob(pages){
   var xr=len,tot=3*N+3;add("xref\n0 "+tot+"\n0000000000 65535 f \n");for(var k=1;k<tot;k++)add(String(off[k]).padStart(10,"0")+" 00000 n \n");add("trailer\n<</Size "+tot+"/Root 1 0 R>>\nstartxref\n"+xr+"\n%%EOF");
   return new Blob(parts,{type:"application/pdf"});
 }
+/* 1.3.12: PDF de la ronda: hoja carta con las mesas de cada tanda (blancas, negras y un espacio para el resultado) y quién descansa */
+function rndPdf(ri){
+  var rd=state.rondas[ri];if(!rd) return;
+  var pages=[],c,y,pn=0,who=function(id){var p=null;state.players.forEach(function(q){if(q.id===id)p=q;});return "No. "+id+(p&&p.name?" · "+p.name:"");};
+  var title=(state.name||"Torneo de Ajedrez Escolar"),sub="Emparejamientos · Ronda "+(ri+1)+" de "+Math.max(state.rounds,state.rondas.length);
+  function page(){var cv=document.createElement("canvas");cv.width=PW;cv.height=PH;c=cv.getContext("2d");c.fillStyle="#fff";c.fillRect(0,0,PW,PH);c.textBaseline="middle";pages.push(cv);pn++;
+    if(pn===1){c.fillStyle="#2c6a49";c.fillRect(PM,40,PW-2*PM,6);c.fillStyle="#14221a";c.font="bold 30px "+PF;c.fillText(pFit(c,title,PW-2*PM),PM,84);c.font="bold 24px "+PF;c.fillStyle="#2c6a49";c.fillText(sub,PM,124);
+      c.fillStyle="#56655c";c.font="16px "+PF;c.fillText(pFit(c,((state.docente||"").trim()?"Docente: "+state.docente.trim()+"   ·   ":"")+"Generado: "+pdfDate(),PW-2*PM),PM,156);c.fillText("El primero de cada mesa juega con blancas. Al terminar, avisen el resultado.",PM,182);y=212}
+    else{c.fillStyle="#56655c";c.font="bold 16px "+PF;c.fillText(pFit(c,title+" · "+sub+" (cont. "+pn+")",PW-2*PM),PM,44);y=74}}
+  var GC=[["Mesa",90,"center"],["Blancas",(PW-2*PM-90-150)/2],["Resultado",150,"center"],["Negras",(PW-2*PM-90-150)/2]];
+  function hdr(){c.fillStyle="#e7efe8";c.fillRect(PM,y,PW-2*PM,40);c.fillStyle="#14221a";c.font="bold 17px "+PF;var x=PM;GC.forEach(function(q){c.textAlign=q[2]||"left";c.fillText(q[0],q[2]==="center"?x+q[1]/2:x+10,y+20);c.textAlign="left";x+=q[1];});y+=40}
+  function need(h){if(y+h>PH-60){page();hdr();}}
+  function row(v,res){var h=46,x=PM;GC.forEach(function(q,i){c.fillStyle="#14221a";c.font=(i===0?"bold 20px ":"18px ")+PF;
+      if(i===2&&!res){c.strokeStyle="#9aa59d";c.lineWidth=1.5;c.strokeRect(x+25,y+9,q[1]-50,h-18);}
+      else{c.textAlign=q[2]||"left";c.fillText(pFit(c,v[i],q[1]-16),q[2]==="center"?x+q[1]/2:x+10,y+h/2);c.textAlign="left";}x+=q[1];});
+    c.strokeStyle="#d4e0d6";c.lineWidth=1;c.beginPath();c.moveTo(PM,y+h+.5);c.lineTo(PW-PM,y+h+.5);c.stroke();y+=h}
+  page();
+  var nT=0;rd.games.forEach(function(g){if(g.b!=null&&(g.tanda||0)+1>nT)nT=(g.tanda||0)+1;});var L="ABCDEFGHIJ";
+  for(var t=0;t<Math.max(nT,1);t++){
+    var list=rd.games.filter(function(g){return g.b!=null&&(g.tanda||0)===t;}).sort(function(a,b){return a.mesa-b.mesa;});
+    if(nT>1){need(90);if(t>0)y+=14;c.fillStyle="#2c6a49";c.font="bold 20px "+PF;c.fillText("Tanda "+L[t]+(t>0?" · entran conforme se desocupen tableros":""),PM,y+16);y+=36}
+    if(t===0||nT>1)hdr();
+    list.forEach(function(g){need(46);var r=g.res==="1-0"?"1 – 0":g.res==="0-1"?"0 – 1":g.res==="d"?"½ – ½":"";row([g.mesa,who(g.w),r,who(g.b)],r);});
+  }
+  var by=rd.games.filter(function(g){return g.b==null;});
+  if(by.length){need(60);y+=14;c.fillStyle="#14221a";c.font="bold 18px "+PF;c.fillText(pFit(c,"Descansa (1 punto): "+by.map(function(g){return who(g.w);}).join(", "),PW-2*PM),PM,y+16);y+=36}
+  pages.forEach(function(cv,i){var x=cv.getContext("2d");x.fillStyle="#8a968e";x.font="12px "+PF;x.textAlign="right";x.textBaseline="middle";x.fillText("Torneo Suizo Escolar · página "+(i+1)+" de "+pages.length,PW-PM,PH-28);x.textAlign="left";});
+  var b;try{b=pdfBlob(pages);}catch(e){return toast("No se pudo crear el PDF en este navegador.");}
+  var name="torneo-ronda"+(ri+1)+"_"+stamp()+".pdf",url=URL.createObjectURL(b);
+  var plain=function(){try{var a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){a.remove();},1500);toast("PDF listo: "+name+" (hoja carta).");}catch(e){window.open(url,"_blank");}};
+  if(window.claude&&window.claude.use){window.claude.use("downloads").then(function(dl){if(!dl)return plain();dl.save({filename:name,data:b}).then(function(){toast("PDF listo: "+name+" (hoja carta).");},function(e){var c2=e&&e.code;if(c2==="declined")return;if(c2==="rate_limited")return toast("Ya hay una descarga pendiente. Intenta de nuevo en un momento.");plain();});},plain);return;}
+  plain();
+}
 function posPdf(){
   var P=posPdfData();if(!P) return toast("Todavía no hay una ronda completa: captura los resultados de la ronda 1.");
   var b;try{b=pdfBlob(posPdfPages(P));}catch(e){return toast("No se pudo crear el PDF en este navegador.");}
@@ -1456,7 +1497,9 @@ function act(a,d){
       var bk=ui.back||{tab:"ronda",round:null,y:0}; ui.back=null; ui.tab=bk.tab; ui.round=bk.round; render(); window.scrollTo(0,bk.y||0); break;
     case "unlock": ui.unlock=true; render(); break;
     case "ask": ui.confirm=d.c; render(); break;
-    case "askb": ui.confirm=d.c; ui.askOk=false; ui.cards.bdc=true; render(); var aw=document.getElementById("askw"); if(aw){try{aw.focus();}catch(x){} if(aw.scrollIntoView) aw.scrollIntoView({block:"center"});} break;
+    case "askb": if(d.c==="reset"&&!state.rondas.length){toast("Todavía no hay rondas que borrar.");break;} ui.confirm="bk-"+d.c; ui.askOk=false; ui.cards.bdc=true; render(); var ab=document.getElementById("askbox"); if(ab&&ab.scrollIntoView) ab.scrollIntoView({block:"center"}); break;
+    case "bkb": saveFile("torneo-respaldo_"+stamp()+".json",backupText(),"application/json"); /* sigue igual que «Borrar sin respaldo» */
+    case "bkn": ui.confirm=d.c; ui.askOk=false; ui.cards.bdc=true; render(); var aw=document.getElementById("askw"); if(aw){try{aw.focus();}catch(x){} if(aw.scrollIntoView) aw.scrollIntoView({block:"center"});} break;
     case "cancel": ui.askOk=false; ui.confirm=null; ui.restore=null; ui.shrink=null; render(); break;
     case "shrink-yes": var to=ui.shrink; ui.confirm=null; ui.shrink=null; if(to!=null) setNum("players",to,true); else render(); break;
     case "backup": saveFile("torneo-respaldo_"+stamp()+".json",backupText(),"application/json"); break;
@@ -1493,6 +1536,9 @@ function act(a,d){
     case "copy-r":
       if(!state.rondas.length) return;
       var last=state.rondas.length-1; copyText(roundText(ui.round==null?last:Math.min(ui.round,last))); break;
+    case "pdf-r":
+      if(!state.rondas.length) return;
+      var lr=state.rondas.length-1; rndPdf(ui.round==null?lr:Math.min(ui.round,lr)); break;
     case "copy-s": copyText(standingsText()); break;
     case "copy-p": copyText(playersText()); break;
     case "close-copy": ui.copy=null; render(); break;
@@ -1561,6 +1607,7 @@ window.addEventListener("storage",function(e){
 
 render();
 initCloud();
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(function(){});}catch(e){}   /* 1.3.12 */
 })();
 </script>
 <div class="upd" id="upd" role="status" hidden><span>Hay una versión nueva de la app.</span><button type="button" id="b-upd">Actualizar</button></div>

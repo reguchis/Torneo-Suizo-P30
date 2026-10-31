@@ -494,7 +494,7 @@ var LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function loadLocal(){try{var s=localStorage.getItem(LS_KEY);var d=s?JSON.parse(s):null;return d&&Array.isArray(d.players)&&Array.isArray(d.rondas)?d:null;}catch(e){return null;}}
 function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
 var state=loadLocal()||blank(2);
-var VERSION="1.3.12"; window.__APPVER=VERSION;
+var VERSION="1.3.13"; window.__APPVER=VERSION;
 var IS_PWA=!!document.querySelector('link[rel="manifest"]')&&location.protocol.indexOf("http")===0&&("serviceWorker" in navigator);
 var FRAMED=false; try{FRAMED=window.top!==window.self;}catch(e){FRAMED=true;}
 var ui={cards:{},bdc:false,askOk:false,manOpen:{},back:null,shrink:null,proj:false,projView:"pairs",about:false,tab:"ronda",round:null,unlock:false,confirm:null,copy:null,copyMsg:"",manual:false,sorteo:false,sorteoText:"",restore:null};
@@ -1107,7 +1107,7 @@ function manSections(){
    (IS_PWA?'<li><b>Actualizaciones.</b> Muestra la versión instalada y “Buscar actualización”. Si hay una versión nueva, toca “Actualizar”; el torneo guardado no se pierde. Si la versión nueva todavía se está publicando, la app te avisa y vuelve a revisar sola.</li>':'<li><b>Actualizaciones.</b> Muestra la versión y cómo se actualiza esta copia de la app.</li>')+
    '<li><b>Acerca de la app.</b> Versión, créditos y tecnología.</li>'+
    '<li><b>Salir.</b> “Salir de la app” hace lo mismo que el botón ⏻.</li>'+
-   '<li><b>Borrar datos</b>, de menor a mayor alcance: <b>Reiniciar torneo</b> borra rondas y resultados y conserva nombres y ajustes, para repetir con el mismo grupo; <b>Nuevo torneo desde cero</b> (en rojo) borra todo y regresa a 2 jugadores, 1 tablero, 1 ronda y 15 minutos; solo conserva el nombre del docente. Antes, cada uno pregunta si quieres guardar un respaldo del torneo: <b>Guardar respaldo y borrar</b>, <b>Borrar sin respaldo</b> o Cancelar. Si todavía no hay rondas, Reiniciar torneo solo avisa. Después pide escribir BORRAR; el botón Confirmar se activa al escribirlo y Enter también confirma.</li></ul>'],
+   '<li><b>Borrar datos</b>, de menor a mayor alcance: <b>Reiniciar torneo</b> borra rondas y resultados y conserva nombres y ajustes, para repetir con el mismo grupo; <b>Nuevo torneo desde cero</b> (en rojo) borra jugadores, rondas y resultados y regresa a 2 jugadores y 1 ronda; conserva la configuración: nombre del torneo, docente, tableros y minutos por tanda (se cambian en Ajustes › Configuración o en la pestaña Ronda). Antes, cada uno pregunta si quieres guardar un respaldo del torneo: <b>Guardar respaldo y borrar</b>, <b>Borrar sin respaldo</b> o Cancelar. Si todavía no hay rondas, Reiniciar torneo solo avisa. Después pide escribir BORRAR; el botón Confirmar se activa al escribirlo y Enter también confirma.</li></ul>'],
   ["Conteo de material",
    '<ul>'+
    '<li>Al terminar el tiempo se cuentan solo las piezas que siguen dentro del tablero: dama 9, torre 5, alfil 3, caballo 3, peón 1. El rey no cuenta.</li>'+
@@ -1201,7 +1201,7 @@ function viewAj(){
       '<button type="button" class="btn danger" id="b-askreset" data-act="askb" data-c="reset">Reiniciar torneo</button>'+
       '<p class="note">Borra rondas y resultados. Conserva nombres y ajustes, para repetir con el mismo grupo.</p>'+
       '<button type="button" class="btn dangerfill" id="b-askfresh" data-act="askb" data-c="fresh">Nuevo torneo desde cero</button>'+
-      '<p class="note">Borra todo: nombres, rondas, resultados y ajustes. Vuelve a 2 jugadores, 1 tablero, 1 ronda y 15 minutos. Conserva el nombre del docente.</p>';
+      '<p class="note">Borra jugadores, rondas y resultados; vuelve a 2 jugadores y 1 ronda. Conserva el nombre del torneo, el docente, los tableros y los minutos.</p>';
     if(ui.confirm==="bk-reset"||ui.confirm==="bk-fresh"){
       var cc=ui.confirm.slice(3);
       bd+='<div class="banner buff" id="askbox"><p><b>'+(cc==="reset"?"Reiniciar torneo":"Nuevo torneo desde cero")+'.</b> Antes de borrar, ¿quieres guardar un respaldo del torneo? Después te pedirá escribir BORRAR.</p>'+
@@ -1212,7 +1212,7 @@ function viewAj(){
     if(ui.confirm==="reset"||ui.confirm==="fresh"){
       var txt=ui.confirm==="reset"
         ?'<b>Reiniciar torneo.</b> Se borran todas las rondas y resultados. Los nombres y ajustes se conservan.'
-        :'<b>Nuevo torneo desde cero.</b> Se borra todo: nombres, rondas, resultados y ajustes. La app vuelve a 2 jugadores, 1 tablero, 1 ronda y 15 minutos.';
+        :'<b>Nuevo torneo desde cero.</b> Se borran los jugadores, las rondas y los resultados; la app vuelve a 2 jugadores y 1 ronda. Se conservan el nombre del torneo, el docente, los tableros y los minutos por tanda.';
       bd+='<div class="banner buff" id="askbox"><p>'+txt+'</p>'+
         '<label for="askw">Para confirmar, escribe BORRAR</label>'+
         '<input class="text" id="askw" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false">'+
@@ -1523,8 +1523,8 @@ function act(a,d){
     case "fresh":
       if(!ui.askOk) return; ui.askOk=false; ui.cards.bdc=false;
       ui.confirm=null; ui.round=null; ui.unlock=false; ui.sorteoText="";
-      mutate(function(s){var b=blank(2),dc=s.docente||"";Object.keys(s).forEach(function(k){delete s[k];});Object.keys(b).forEach(function(k){s[k]=b[k];});s.docente=dc;});
-      ui.tab="ronda"; tReset(); render(); window.scrollTo(0,0); toast("Nuevo torneo listo: 2 jugadores, 1 tablero, 1 ronda"); break;
+      mutate(function(s){var b=blank(2),keep={docente:s.docente||"",name:s.name||b.name,boards:s.boards||b.boards,minutes:s.minutes||b.minutes};Object.keys(s).forEach(function(k){delete s[k];});Object.keys(b).forEach(function(k){s[k]=b[k];});Object.keys(keep).forEach(function(k){s[k]=keep[k];});});
+      ui.tab="ronda"; tReset(); render(); window.scrollTo(0,0); toast("Nuevo torneo listo: 2 jugadores y 1 ronda; se conservan el nombre, los tableros y los minutos"); break;
     case "cfg-save":
       var ni=document.getElementById("in-name"),di=document.getElementById("in-doc");
       try{if(document.activeElement&&document.activeElement.blur) document.activeElement.blur();}catch(e){}

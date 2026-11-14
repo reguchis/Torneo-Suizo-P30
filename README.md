@@ -63,3 +63,8 @@ Quita el ícono viejo «Torneo Suizo»: si pregunta si borra también los datos 
 La app ahora se llama **Ajedrez**. En GitHub: repositorio Torneo-Suizo-P30 › Settings › Repository name: `Ajedrez` › Rename.
 Sube estos archivos y abre https://reguchis.github.io/Ajedrez/ para instalarla otra vez. Tus torneos siguen ahí (se guardan en el aparato).
 Quita el ícono viejo «Torneo Suizo»: si pregunta si borra también los datos del sitio, contesta **NO**.
+
+## Cambio de nombre (una sola vez, versión 1.3.33)
+La app ahora se llama **Ajedrez**. En GitHub: repositorio Torneo-Suizo-P30 › Settings › Repository name: `Ajedrez` › Rename.
+Sube estos archivos y abre https://reguchis.github.io/Ajedrez/ para instalarla otra vez. Tus torneos siguen ahí (se guardan en el aparato).
+Quita el ícono viejo «Torneo Suizo»: si pregunta si borra también los datos del sitio, contesta **NO**.

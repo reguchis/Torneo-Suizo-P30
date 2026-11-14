@@ -119,7 +119,7 @@ p{margin:0}
 .row>.btn{flex:1 1 auto}
 .undo-row{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)}
 .ajg{display:flex;flex-direction:column;gap:10px}
-.sech{margin:20px 4px 8px;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}h2+.sech{margin-top:6px}
+.sech{margin:20px 4px 8px;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}h2+.sech{margin-top:6px}.subt{margin:16px 0 8px;padding-top:12px;border-top:1px solid var(--line,rgba(0,0,0,.1));font-size:.75rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}.subt.f{border-top:0;padding-top:0;margin-top:4px}
 .card>summary{font-size:1.02rem}
 .cardin{display:flex;flex-direction:column;gap:12px;margin-top:12px}
 .cardin .row .btn{flex:1 1 auto}
@@ -530,7 +530,7 @@ function bkMark(){try{localStorage.setItem(BK_KEY,String(Date.now()));}catch(e){
 function bkCard(){if(readOnly||docRef||!state.rondas.length)return '';var t=bkLast();if(t&&Date.now()-t<7*864e5)return '';var d=Math.max(1,Math.floor((Date.now()-t)/864e5));
 return '<section class="panel" id="bka" style="border-left:4px solid var(--buff)"><h2>Respaldo pendiente</h2><p class="note">'+(t?'Tu último respaldo fue hace '+d+(d===1?' día':' días')+'.':'Todavía no has guardado un respaldo en este aparato.')+' El torneo vive solo en este aparato: guarda una copia fuera de él (correo o nube).</p><button type="button" class="btn wide" id="b-bk-now" data-act="backup">Guardar respaldo ahora</button></section>';}
 var state=loadLocal()||blank(2);
-var VERSION="1.3.36"; window.__APPVER=VERSION;
+var VERSION="1.3.37"; window.__APPVER=VERSION;
 var IS_PWA=!!document.querySelector('link[rel="manifest"]')&&location.protocol.indexOf("http")===0&&("serviceWorker" in navigator);
 var FRAMED=false; try{FRAMED=window.top!==window.self;}catch(e){FRAMED=true;}
 var ui={cards:{},bdc:false,askOk:false,manOpen:{},back:null,shrink:null,proj:false,projView:"pairs",about:false,tab:"ronda",round:null,unlock:false,confirm:null,copy:null,copyMsg:"",manual:false,sorteo:false,sorteoText:"",restore:null};
@@ -1214,7 +1214,7 @@ function manSections(){
   ["Ajustes",
    '<ul>'+
    '<li><b>Orden de Ajustes.</b> Todas las tarjetas empiezan plegadas para no tocar nada por error; tócalas para abrirlas. Están en secciones con título (desde la 1.3.36), de lo más usado a lo más delicado: <b>Tu app</b> (Configuración) · <b>Tus datos</b> (Protección de mis datos y Respaldo) · <b>Ayuda e información</b> (Ayuda, Actualizaciones y Acerca de la app) · <b>Salir y borrar</b> (Salir y Borrar datos).</li>'+
-   '<li><b>Configuración.</b> Nombre del torneo y docente que organiza: escríbelos y toca <b>Guardar</b>; tu nombre aparece arriba de Ronda, en Copiar posiciones y en el CSV (también se guarda solo mientras escribes). Mientras falte tu nombre, Configuración se abre sola al entrar a Ajustes. Además, jugadores, tableros, rondas y minutos por tanda. Un cambio de tableros reacomoda la ronda actual solo si aún no tiene resultados. Antes de iniciar, estos mismos valores también están en la pestaña Ronda.</li>'+
+   '<li><b>Configuración.</b> Por dentro va en tres partes: «Datos del torneo», «Partidas» y «Pantalla» (tema y deslizar). Nombre del torneo y docente que organiza: escríbelos y toca <b>Guardar</b>; tu nombre aparece arriba de Ronda, en Copiar posiciones y en el CSV (también se guarda solo mientras escribes). Mientras falte tu nombre, Configuración se abre sola al entrar a Ajustes. Además, jugadores, tableros, rondas y minutos por tanda. Un cambio de tableros reacomoda la ronda actual solo si aún no tiene resultados. Antes de iniciar, estos mismos valores también están en la pestaña Ronda.</li>'+
    '<li><b>Protección de mis datos.</b> Al cerrarla, su título ya dice «protegidos» (en verde) o «sin proteger» (en rojo). Dentro dice si la app está instalada y si el navegador guarda sus datos de forma permanente. Si no están protegidos, explica por qué y cómo instalarla; «Proteger mis datos» le pide al navegador que no borre el torneo al limpiar el historial ni cuando le falta espacio. La forma segura es instalar la app y abrirla siempre desde su ícono; aun así, guarda un respaldo del torneo.</li>'+
    '<li><b>Restablecer configuración</b> (en Borrar datos, arriba de «Nuevo torneo desde cero»). No borra el torneo: después de mostrarte la lista y pedir confirmación, vuelve el nombre del torneo a «Torneo de Ajedrez Escolar», deja vacío el docente y pone 1 tablero y 15 minutos por tanda. Si la ronda actual aún no tiene resultados, sus mesas se reacomodan como al cambiar los tableros a mano.</li>'+
    '<li><b>Respaldo.</b> Con el torneo iniciado, si no has guardado un respaldo en los últimos 7 días aparece arriba de Ronda la tarjeta «Respaldo pendiente» con el botón «Guardar respaldo ahora» (no sale en solo lectura ni con el torneo guardado en la nube). Si el aparato no pudo guardar el torneo (sin espacio o navegación privada), queda un aviso rojo arriba: guarda un respaldo en ese momento. “Guardar respaldo” descarga un archivo con todo el torneo; “Restaurar (recuperar) un respaldo…” lo recupera desde el archivo; si el archivo es igual al torneo que ya tienes, la app avisa que no hay nada que recuperar (sección 9).</li>'+
@@ -1307,12 +1307,12 @@ function updInner(){
 }
 function viewAj(){
   var h='<h2>Ajustes</h2>';
-  var cfg='<div class="field"><label for="in-name">Nombre del torneo</label>'+
+  var cfg=SBT('Datos del torneo',1)+'<div class="field"><label for="in-name">Nombre del torneo</label>'+
     '<input class="text" id="in-name" type="text" maxlength="80" value="'+esc(state.name)+'"'+dis()+'></div>'+
     '<div class="field"><label for="in-doc">Docente que organiza</label>'+
     '<input class="text" id="in-doc" type="text" maxlength="80" autocomplete="name" value="'+esc(state.docente||"")+'"'+dis()+'></div>'+
-    '<div class="r2b"><button type="button" class="btn wf" id="b-cfg-save" data-act="cfg-save"'+dis()+'>Guardar</button><button type="button" class="btn" id="b-theme" data-act="theme">Tema: claro/<wbr>oscuro/<wbr>auto</button></div>'+settingsBlock()+
-    '<button type="button" class="btn wf" id="b-swp" data-act="swp" style="margin-top:10px">Deslizar entre pestañas: '+(SWP()?'encendido':'apagado')+'</button><p class="note">Encendido, cambias de pestaña deslizando el dedo a la izquierda o a la derecha (además de los botones de abajo). Se guarda al tocarlo, solo en este equipo.</p>';
+    '<button type="button" class="btn wf" id="b-cfg-save" data-act="cfg-save"'+dis()+'>Guardar</button>'+SBT('Partidas')+settingsBlock()+SBT('Pantalla')+
+    '<button type="button" class="btn wf" id="b-theme" data-act="theme">Tema: claro/oscuro/auto</button><button type="button" class="btn wf" id="b-swp" data-act="swp" style="margin-top:10px">Deslizar entre pestañas: '+(SWP()?'encendido':'apagado')+'</button><p class="note">Encendido, cambias de pestaña deslizando el dedo a la izquierda o a la derecha (además de los botones de abajo). Se guarda al tocarlo, solo en este equipo.</p>';
   if(state.rondas.length>0) cfg+='<p class="note">Con el torneo empezado, los jugadores se agregan o retiran en la pestaña Jugadores. Un cambio de tableros reacomoda la ronda actual solo si aún no tiene resultados.</p>';
   var bk='<p class="note">Guarda el torneo completo en un archivo (JSON) para no perderlo o para pasarlo a otro equipo.</p>'+
     '<button type="button" class="btn wf" id="b-backup" data-act="backup">Guardar respaldo</button>'+
@@ -1372,6 +1372,7 @@ function viewAj(){
   if(last) h+=SH(FRAMED?'Borrar':readOnly?'Salir':'Salir y borrar')+'<div class="ajg">'+last+'</div>';
   return h;
 }
+function SBT(t,f){return '<div class="subt'+(f?' f':'')+'">'+t+'</div>';}
 function SH(t){return '<h3 class="sech">'+t+'</h3>';}
 function aboutHtml(){
   return '<details class="card" id="acerca"'+(ui.cards.acerca?" open":"")+'><summary><span>Acerca de la app <span class="sumv">· versión '+VERSION+'</span></span></summary><div class="about">'+
